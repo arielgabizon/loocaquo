@@ -89,7 +89,7 @@
 \newcommand{\bgamma}{\boldsymbol{\gamma}}
 \newcommand{\bsigma}{\boldsymbol{\sigma}}
 \newcommand{\plonk}{\ensuremath{\mathcal{P} \mathfrak{lon}\mathcal{K}}\xspace}
-\newcommand{\caulkpp}{\ensuremath{\mathsf{\mathrel{Caulk}\mathrel{\scriptstyle{++}}}}\xspace}
+\newcommand{\cqup}{\ensuremath{\mathpgoth{cq} }\xspace}
 \newcommand{\flookup}{\ensuremath{\mathsf{\mathpgoth{Flookup}}}\xspace}
 \newcommand{\caulkp}{\ensuremath{\mathsf{\mathrel{Caulk}\mathrel{\scriptstyle{+}}}}\xspace}
 \newcommand{\caulk}{\ensuremath{\mathsf{Caulk}}\xspace}
@@ -100,11 +100,11 @@
 
 
 % \newcommand{\plonk}{\ensuremath{\mathtt{PLONK}}\xspace}
-\newcommand{\papertitle}{\flookup: Fractional decomposition-based lookups  in quasi-linear time independent of table size}
+\newcommand{\papertitle}{\cqup:\footnote{Pronounced as ``seek you''.} Cached quotients for fast lookups}
 %\newcommand{\authorname}}
 \newcommand{\company}{}
 \title{ \bf \papertitle \\[0.72cm]}
-\author{ Liam Eagen \and  Dario Fioe \\ \tt{IMDEA}  \and Ariel Gabizon \\ \tt{Zeta Function Technologies} } 
+\author{ Liam Eagen \and  Dario Fiore \\ \tt{IMDEA}  \and Ariel Gabizon \\ \tt{Zeta Function Technologies} } 
 % 
 % 	\large{\authorname} \\[0.5cm] \large{\company}
 % 	\\ {DRAFT}
@@ -425,12 +425,12 @@
 \newcommand{\secset}{\ensuremath{I}\xspace}
 \newcommand{\pubbase}[1]{\ensuremath{\mu_{#1}}\xspace}
 \newcommand{\subspace}{\ensuremath{\mathbb{H}}\xspace}
+\newcommand{\bigspace}{\ensuremath{\mathbb{V}}\xspace}
 \newcommand{\subtable}{\ensuremath{T_0}\xspace}
 \newcommand{\tablelang}{\ensuremath{\lang_{T}}\xspace}
 \newcommand{\vanishingtablelang}{\ensuremath{\lang_{\subspace}}\xspace}
 \newcommand{\nonorm}[1]{\ensuremath{\Gamma^T_{#1}}\xspace}
 \newcommand{\unnorm}[2]{\ensuremath{\Gamma^{#1}_{#2}}\xspace}
-\newcommand{\bigsubspace}{\ensuremath{\mathbb{H}}\xspace}
 \newcommand{\bigspacebase}{\ensuremath{\lambda}\xspace}
 \newcommand{\bigspacegen}{\ensuremath{\mathsf{h}}\xspace}
 \newcommand{\modvan}[1]{\ensuremath{\mathrm{mod\;}Z_{#1}}\xspace}
@@ -441,22 +441,77 @@
 \begin{document}
     \maketitle
 \begin{abstract}
- We present a protocol for checking the values of a committed polynomial $\phi(X)\in \polysofdeg{\tabsize}$ over a multiplicative subgroup $\subspace\subset \F$ of size $m$ are contained in a
- table $T\in \F^N$. After an $O(\tabsize \log \tabsize)$ preprocessing step, the prover algorithm runs in time $O(\witsize\log \witsize)$. Thus, we continue to improve upon the recent breakthrough sequence of results starting from \caulk~\cite{caulk}, which was the first to achieve sublinear complexity in the full table size $N$, \caulkp~\cite{caulkp,flookup,baloo}, that has so far reached prover time $O(\witsize \log^2 \witsize)$.
+ We present a protocol for checking the values of a committed polynomial $\phi(X)\in \polysofdeg{\tabsize}$ over a multiplicative subgroup $\subspace\subset \F$ of size \witsize are contained in a
+ table $T\in \F^\tabsize$. After an $O(\tabsize \log \tabsize)$ preprocessing step, the prover algorithm runs in time $O(\witsize\log \witsize)$. Thus, we continue to improve upon the recent breakthrough sequence of results starting from \caulk~\cite{caulk}, which was the first to achieve sublinear complexity in the full table size $N$, \caulkp~\cite{caulkp,flookup,baloo}, that has so far reached prover time $O(\witsize \log^2 \witsize)$.
  \end{abstract}
 
 % !TEX root = ../flookup.texV
 
 \section{Introduction}
 The \emph{lookup problem} is fundamental to the efficiency of modern zk-SNARKs.
-Somewhat informally, it asks for a protocol to prove the values of a committed polynomial $\phi(X)\in\polysofdeg{m}$ are contained in a table $T$ of size $N$ of predefined legal values.
+Somewhat informally, it asks for a protocol to prove the values of a committed polynomial $\phi(X)\in\polysofdeg{\witsize}$ are contained in a table $T$ of size $\tabsize$ of predefined legal values.
 When the table $T$ corresponds to an operation without an efficient low-degree arithmetization in $\F$, such a protocol produces significant savings in proof construction time for programs containing the operation.
-Building on previous work of \cite{arya}, \plookup \cite{plookup} was the first to explicitly describe a solution to this problem in the polynomial-IOP context. \plookup described a protocol with prover complexity quasilinear in both $m$ and $N$.
-This left the intriguing question of whether the dependence on $N$ could be made \emph{sublinear} after performing a preprocessing step for the table $T$.
-\caulk \cite{caulk} answered this question in the affirmative by leveraging bi-linear pairings, achieving a run time of $O(m^2+m\log N)$. \caulkp \cite{caulkp} improved this to $O(m^2)$ getting rid of the dependence on table size completely. 
+Building on previous work of \cite{arya}, \plookup \cite{plookup} was the first to explicitly describe a solution to this problem in the polynomial-IOP context. \plookup described a protocol with prover complexity quasilinear in both \witsize and \tabsize.
+This left the intriguing question of whether the dependence on \tabsize could be made \emph{sublinear} after performing a preprocessing step for the table $T$.
+\caulk \cite{caulk} answered this question in the affirmative by leveraging bi-linear pairings, achieving a run time of $O(\witsize^2+\witsize\log \tabsize)$. \caulkp \cite{caulkp} improved this to $O(\witsize^2)$ getting rid of the dependence on table size completely. 
 
-However, the quadratic dependence on $m$  of these works makes them impractical for a circuit with many lookup gates.
-We resolve this issue by giving a protocol called \flookup that is quasi-linear in $m$ and has no dependence on $N$ after the preprocessing step.
+However, the quadratic dependence on \witsize  of these works makes them impractical for a circuit with many lookup gates.
+We resolve this issue by giving a protocol called \cqup that is quasi-linear in \witsize and has no dependence on \tabsize after the preprocessing step.
+
+\subsection{Comparison of results}
+
+Table with relative proof size, prover ops, verifier ops
+
+caulk
+caulk+
+flookup
+baloo
+this work
+
+\subsection{Overview}
+-logarithmic derivative method
+
+- For large table problem is computing A that agrees with $M/(t+\beta)$ on \bigspace
+
+- Need way to compute $A$ 
+\section{Preliminaries}
+
+\subsection{Notation:}
+\subspace - small space
+\bigspace - big space
+Lagrange bases for big and small space
+
+
+
+
+AGM - real and ideal pairing checks,
+agm - real and ideal pairing 
+KZG
+
+\subsection{log derivative method}
+Lemma from mvlookup
+\begin{lemma}\label{lem:mvlookup}
+ Given $f\in \F^\witsize$, and $t\in \F^\tabsize$,
+ we have $f\subset t$ as sets if and only if for some $m\in \F^\tabsize$ the following identity of rational functions holds
+ \[\sumi{\witsize}\frac{1}{X+f_i}=\sumi{\tabsize}\frac{m_i}{X+t_i}.\]
+\end{lemma}
+
+\section{Cached quotients}
+
+\begin{thm}
+Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
+There is an algorithm that after a preprocessing step of $O(\tabsize\cdot \log \tabsize)$ operations.
+Given input $f\in \polysofdeg{\witsize}$ computes in $O(\witsize\cdot \log \witsize)$ \G2 operations
+$\cm=\enc2{Q(x)}$ where $Q\in \polysofdeg{\tabsize}$ is such that
+\[f(X)\cdot T(X) = Q(X)\cdot Z_{\bigspace}(X) + R(X),\]
+for $R(X)\in \polysofdeg{\tabsize}$
+\end{thm}
+
+\section{Main protocol}
+\begin{dfn}\label{dfn:mainrelation}
+ \rel is all pairs $(\cm,)$
+\end{dfn}
+
 \bibliographystyle{alpha}
 \bibliography{references}
 \end{document}
