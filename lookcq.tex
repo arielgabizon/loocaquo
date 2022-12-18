@@ -521,7 +521,7 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
 \begin{lemma}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
 There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
-$q_i\defeq \enc1{x^{d-\tabsize}\cdot Q_i(x)}$
+$q_i\defeq \enc1{^{d-\tabsize}\cdot Q_i(x)}$
 where $Q_i(X)\in \F[X]$ is such that
 \[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
 in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
@@ -536,6 +536,49 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
  ..bla  problem is relation is defined only after srs is chosen
 \end{dfn}
 
+Ad-hoc dfn of ks protocol for table lookup
+
+Relations dependent on srs.
+\begin{enumerate}
+ \item Fix table $T$
+ \item Choose srs 
+ \item relation is $(\cm,f)$ such that \enc1{f(x)}=\cm and $\restricttoset{f}{\subspace}\subset T$.
+ \item \prv sends \cm
+ \item \ext outputs $f$
+ \item \prv and \ver  \prob that \ver outputs \acc but $\restricttoset{f}{\subspace}\not\subset T$ is \negl
+ 
+\end{enumerate}
+
+Main protocol:
+Input $(\cm,f)$.
+\begin{enumerate}
+ \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $t_i$ appears in \restricttoset{f}{\subspace}
+ \item \prv sends \enc1{m(x)}.
+ \item \ver chooses and sends random $\beta \in \F$.
+\item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(t_i+\beta)$.
+\item \prv sends \enc1{A(x)}.
+\item\label{step:computeQA} \prv computes $q_A\defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
+\[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
+\item \prv computes $B\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
+\item \prv sends \enc1{B(x)}
+\item \prv computes $Q_B(X)$ such that 
+\[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X)\]
+\item \prv computes and sends the values $a=A(0),b=B(0)$.
+\item \ver sends random $\alpha\in \F$.
+\item \ver checks that $\tabsize\cdot a = witsize\cdot b$.
+\item \prv computes and sends $p=\enc1{P(x)}$ where
+\[P(X)\defeq A(X)\cdot X^{d-\tabsize} + \alpha\cdot B(X)X^{d-\witsize}\]
+\item \ver sends random $\gamma \in \F$.
+\item \prv sends $A(\gamma), B(\gamma),Q_B(\gamma),f(\gamma)$.
+\item \ver checks $P$ is correct
+\item \prv sends KZG proofs to all these poly openings.
+\end{enumerate}
+
+
+
+\begin{lemma}\label{lem:computeQA}
+The element $q_A$ in Step \ref{step:computeQA} can be computed in  XX \G2 operations and $O(\witsize\log\witsize)$ \F operations
+\end{lemma}
 
 
 \bibliographystyle{alpha}
