@@ -507,10 +507,36 @@ $\cm=\enc2{Q(x)}$ where $Q\in \polysofdeg{\tabsize}$ is such that
 for $R(X)\in \polysofdeg{\tabsize}$
 \end{thm}
 
+
+\begin{lemma}
+Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
+There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
+$q_i\defeq \enc1{Q_i(x)}$
+where $Q_i(X)\in \F[X]$ is such that
+\[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
+in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
+ 
+\end{lemma}
+
+\begin{lemma}
+Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
+There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
+$q_i\defeq \enc1{x^{d-\tabsize}\cdot Q_i(x)}$
+where $Q_i(X)\in \F[X]$ is such that
+\[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
+in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
+ 
+\end{lemma}
+
 \section{Main protocol}
 \begin{dfn}\label{dfn:mainrelation}
- \rel is all pairs $(\cm,)$
+ \rel is all pairs $(\cm,f)$
+ such that \cm is a commitment to $f$ and $f|_\subspace \subset T$.
+ 
+ ..bla  problem is relation is defined only after srs is chosen
 \end{dfn}
+
+
 
 \bibliographystyle{alpha}
 \bibliography{references}
