@@ -490,10 +490,32 @@ flookup
 baloo
 this work
 
-\subsection{Overview}
--logarithmic derivative method
+\subsection{Technical Overview}
+\paragraph{The innovation of \caulk }
+While \cite{caulk,caulkp,flookup,baloo} use preprocessing and pairings to extract a subtable of witness size;
 
-- For large table problem is computing A that agrees with $M/(t+\beta)$ on \bigspace
+
+\paragraph{Our approach}
+here we use preprocessing and pairings more directly to run an existing lookup protocol - mvlookup,
+in time independent from table size
+-logarithmic derivative method
+Let's review this protocol:
+It relies on the following lemma from \cite{mvlookup}
+that says that $\restricttoset{f}{\subspace}\in \tab$ if and only if for some $m\in \F^\tabsize$
+ \[\sumi{\tabsize}\frac{m_i}{X+t_i}=\sumi{\witsize}\frac{1}{X+f_i}\]
+Roughly, the protocol of \cite{mvlookup} checks this identity on a random $\beta$,
+by sending polynomials $A$ and $B$ that agree on \bigspace with the rational function values of the LHS and RHS
+respectively.
+Given commitments to $A,B$ we can check the equality holds via various sumcheck techniques, e.g. that descirbed in \cite{aurora}.
+The RHS is not a problem because it is a sum of size \witsize.
+Interpolating $A$, and computing its commitment is actually not a problem either, because the number of non-zero values
+is at most \witsize. So if we precompute the commitments to the Lagrange base of  \bigspace we're fine.
+
+The main challenge, and innovation, is to convince the verifier \ver that $A$ is correctly formed.
+
+
+This protocol is amenable, because polynomials involved have sparsity depending on witness
+- For large table problem is computing A that agrees with $m/(\tab+\beta)$ on \bigspace
 
 - Need way to compute $A$ 
 \section{Preliminaries}
@@ -542,7 +564,7 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
 
 \begin{lemma}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
-There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
+There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,d}}$ computes for $i\in [\tabsize]$, the elements 
 $q_i\defeq \enc1{^{d-\tabsize}\cdot Q_i(x)}$
 where $Q_i(X)\in \F[X]$ is such that
 \[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
