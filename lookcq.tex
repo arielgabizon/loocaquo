@@ -89,7 +89,7 @@
 \newcommand{\bgamma}{\boldsymbol{\gamma}}
 \newcommand{\bsigma}{\boldsymbol{\sigma}}
 \newcommand{\plonk}{\ensuremath{\mathcal{P} \mathfrak{lon}\mathcal{K}}\xspace}
-\newcommand{\cqup}{\ensuremath{\mathpgoth{cq} }\xspace}
+\newcommand{\cq}{\ensuremath{\mathpgoth{cq} }\xspace}
 \newcommand{\flookup}{\ensuremath{\mathsf{\mathpgoth{Flookup}}}\xspace}
 \newcommand{\caulkp}{\ensuremath{\mathsf{\mathrel{Caulk}\mathrel{\scriptstyle{+}}}}\xspace}
 \newcommand{\caulk}{\ensuremath{\mathsf{Caulk}}\xspace}
@@ -100,7 +100,7 @@
 
 
 % \newcommand{\plonk}{\ensuremath{\mathtt{PLONK}}\xspace}
-\newcommand{\papertitle}{\cqup:\footnote{Pronounced as ``seek you''.} Cached quotients for fast lookups}
+\newcommand{\papertitle}{\cq:\footnote{Pronounced ``seek you''.} Cached quotients for fast lookups}
 %\newcommand{\authorname}}
 \newcommand{\company}{}
 \title{ \bf \papertitle \\[0.72cm]}
@@ -412,7 +412,7 @@
 \newcommand{\isinvanishing}[1]{\ensuremath{\mathsf{IsInVanishing_{\subspace,#1}}}\xspace}
 \newcommand{\batchedisinvanishing}[1]{\ensuremath{\mathsf{BatchedIsInVanishing_{\subspace,#1}}}\xspace}
 \newcommand{\isconsistent}{\ensuremath{\mathsf{IsConsistent}}\xspace}
-\newcommand{\isintable}[1]{\ensuremath{\mathsf{IsInTable_{\subspace,#1}}}\xspace}
+\newcommand{\isintable}{\ensuremath{\mathsf{IsInTable_{\subspace}}}\xspace}
 \newcommand{\isinvanishingtable}[1]{\ensuremath{\mathsf{IsInVanishingTable_{\subspace,#1}}}\xspace}
 \newcommand{\isvanishingsubtable}[1]{\ensuremath{\mathsf{IsVanishingSubtable_{#1}}}\xspace}
 \newcommand{\haslowerdegree}{\ensuremath{\mathsf{HasLowerDegree}}\xspace}
@@ -436,13 +436,35 @@
 \newcommand{\modvan}[1]{\ensuremath{\mathrm{mod\;}Z_{#1}}\xspace}
 \newcommand{\extractevaltable}{\ensuremath{\mathsf{ExtractEvalTable}_{C,\tablegroup}}\xspace}
 \newcommand{\witsize}{\ensuremath{n}\xspace}
+\newcommand{\witruntime}{\ensuremath{\witsize\log\witsize}\xspace}
 \newcommand{\tabsize}{\ensuremath{N}\xspace}
+\newcommand{\tabruntime}{\ensuremath{\tabsize\log\tabsize}\xspace}
+\newcommand{\tab}{\ensuremath{\mathfrak{t}}\xspace}
+ \renewcommand{\a}{\ensuremath{\mathsf{a}}\xspace}
+\renewcommand{\b}{\ensuremath{\mathsf{b}}\xspace}
+\renewcommand{\c}{\ensuremath{\mathsf{c}}\xspace}
+\newcommand{\f}{\ensuremath{\mathsf{f}}\xspace}
+\renewcommand{\p}{\ensuremath{\mathsf{p}}\xspace}
+\newcommand{\qa}{\ensuremath{\mathsf{q_a}}\xspace}
+\newcommand{\qb}{\ensuremath{\mathsf{q_b}}\xspace}
+\newcommand{\m}{\ensuremath{\mathsf{m}}\xspace}
+\newcommand{\agam}{\ensuremath{a_\gamma}\xspace}
+\newcommand{\gamproof}{\ensuremath{\mathsf{\pi_\gamma}}\xspace}
+\newcommand{\zerproof}{\ensuremath{\mathsf{\pi_0}}\xspace}
+\newcommand{\bgam}{\ensuremath{b_\gamma}\xspace}
+\newcommand{\qbgam}{\ensuremath{Q_{b,\gamma}}\xspace}
+\newcommand{\zgam}{\ensuremath{Z_{\bigspace,\gamma}}\xspace}
+\newcommand{\fgam}{\ensuremath{f_{\gamma}}\xspace}
+\newcommand{\pgam}{\ensuremath{P_{\gamma}}\xspace}
 
 \begin{document}
     \maketitle
 \begin{abstract}
  We present a protocol for checking the values of a committed polynomial $\phi(X)\in \polysofdeg{\tabsize}$ over a multiplicative subgroup $\subspace\subset \F$ of size \witsize are contained in a
- table $T\in \F^\tabsize$. After an $O(\tabsize \log \tabsize)$ preprocessing step, the prover algorithm runs in time $O(\witsize\log \witsize)$. Thus, we continue to improve upon the recent breakthrough sequence of results starting from \caulk~\cite{caulk}, which was the first to achieve sublinear complexity in the full table size $N$, \caulkp~\cite{caulkp,flookup,baloo}, that has so far reached prover time $O(\witsize \log^2 \witsize)$.
+ table $T\in \F^\tabsize$. After an $O(\tabsize \log \tabsize)$ preprocessing step, the prover algorithm runs in time $O(\witsize\log \witsize)$. Thus, we continue to improve upon the recent breakthrough sequence of results\cite{caulk,caulkp,flookup,baloo} starting from \caulk~\cite{caulk}, which achieve sublinear complexity in the table size \tabsize. The two most recent works in this seqence \cite{flookup,baloo} achieved
+ prover complexity $O(\witsize\cdot \log^2 \witsize)$.
+ 
+ Moreover, as in \cite{caulk,caulkp,baloo} our construction relies on homomorphic table commitments, which makes them amenable to vector lookups in the manner described in Section 4 of \cite{plookup}.
  \end{abstract}
 
 % !TEX root = ../flookup.texV
@@ -456,7 +478,7 @@ This left the intriguing question of whether the dependence on \tabsize could be
 \caulk \cite{caulk} answered this question in the affirmative by leveraging bi-linear pairings, achieving a run time of $O(\witsize^2+\witsize\log \tabsize)$. \caulkp \cite{caulkp} improved this to $O(\witsize^2)$ getting rid of the dependence on table size completely. 
 
 However, the quadratic dependence on \witsize  of these works makes them impractical for a circuit with many lookup gates.
-We resolve this issue by giving a protocol called \cqup that is quasi-linear in \witsize and has no dependence on \tabsize after the preprocessing step.
+We resolve this issue by giving a protocol called \cq that is quasi-linear in \witsize and has no dependence on \tabsize after the preprocessing step.
 
 \subsection{Comparison of results}
 
@@ -536,51 +558,102 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
  ..bla  problem is relation is defined only after srs is chosen
 \end{dfn}
 
+\subsection{Definitions}
+
 Ad-hoc dfn of ks protocol for table lookup
 
 Relations dependent on srs.
-\begin{enumerate}
- \item Fix table $T$
- \item Choose srs 
- \item relation is $(\cm,f)$ such that \enc1{f(x)}=\cm and $\restricttoset{f}{\subspace}\subset T$.
- \item \prv sends \cm
- \item \ext outputs $f$
- \item \prv and \ver  \prob that \ver outputs \acc but $\restricttoset{f}{\subspace}\not\subset T$ is \negl
- 
-\end{enumerate}
+Tuple \gen,\isintable
+\begin{itemize}
+ \item $\gen(\tab,\tabsize)\to \srs0$
+ \item $\isintable$ a protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has \enc1{f(x)}.
+ Both have \tab and \srs0.
+ such that
+ \begin{itemize}
+  \item Completeness:If $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
+  \item Knowledge soundness in the algebraic group model:
+   For any $\tab\in\F^\witsize$, the probability of any algebraic \adv to win the following game is \negl
 
+\begin{enumerate}
+ \item Let $\srs0=\gen(\tab,\tabsize)$.
+ \item \adv sends a message \cm and values $f_1,\ldots, f_\witsize$ such that $\cm=\sumi{\witsize}f_i\cdot \enc1{L_i(x)}$.
+ \item \adv and \ver engage in the protocol $\isintable(\tab,\cm)$ with \adv taking the role of \prv.
+ \item \adv wins if 
+ \begin{itemize}
+  \item \ver outputs \acc
+  \item $\restricttoset{f}{\subspace}\not\subset \tab$.
+ \end{itemize}
+
+\end{enumerate}
+\end{itemize}
+\end{itemize}
 Main protocol:
+Preprocessed inputs:
+\enc2{Z_\bigspace(x)}, \enc2{T(x)}
 Input $(\cm,f)$.
 \begin{enumerate}
- \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $t_i$ appears in \restricttoset{f}{\subspace}
+ \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
  \item \prv sends \enc1{m(x)}.
  \item \ver chooses and sends random $\beta \in \F$.
-\item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(t_i+\beta)$.
-\item \prv sends \enc1{A(x)}.
-\item\label{step:computeQA} \prv computes $q_A\defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
+\item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(\tab_i+\beta)$.
+\item \prv sends $\a\defeq \enc1{A(x)}$.
+\item\label{step:computeQA} \prv computes $\qa \defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
 \[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
 \item \prv computes $B\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
-\item \prv sends \enc1{B(x)}
+\item \prv sends $\qb\defeq \enc1{B(x)}$.
 \item \prv computes $Q_B(X)$ such that 
 \[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X)\]
-\item \prv computes and sends the values $a=A(0),b=B(0)$.
+\item \prv computes and sends the value $a_0\defeq A(0)$.
+\item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
 \item \ver sends random $\alpha\in \F$.
-\item \ver checks that $\tabsize\cdot a = witsize\cdot b$.
-\item \prv computes and sends $p=\enc1{P(x)}$ where
+\item \prv computes and sends $\p=\enc1{P(x)}$ where
 \[P(X)\defeq A(X)\cdot X^{d-\tabsize} + \alpha\cdot B(X)X^{d-\witsize}\]
 \item \ver sends random $\gamma \in \F$.
-\item \prv sends $A(\gamma), B(\gamma),Q_B(\gamma),f(\gamma)$.
-\item \ver checks $P$ is correct
+\item \prv sends $\agam \defeq A(\gamma),\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
 \item \prv sends KZG proofs to all these poly openings.
+\item\label{step:checkqa} \ver checks that
+\[e(\a,\enc2{T(x)}+\enc2{\beta})=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
+\item As part of checking the correctness of \qb, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and computes
+\[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}\]
+\item As part of  checking $P$ is correct, \ver computes 
+\[\pgam\defeq \agam\cdot \gamma^{d-\tabsize}+\alpha\bgam\cdot \gamma^{d-\witsize}\]
+\item To perform a batched KZG check for the correctness of the values  $\agam,\bgam,\fgam,\qbgam,\pgam$
+  \begin{enumerate}
+   \item \ver sends random $\eta\in \F$. \prv and \ver separately compute
+   \[v\defeq \agam+\eta\cdot \bgam +\eta^2\cdot\fgam + \eta^3\cdot \qbgam + \eta^4\cdot \pgam\]
+   \item \prv computes $\gamproof\defeq \enc1{h(x)}$ for 
+   \[h(X)\defeq \frac{A(X)+\eta\cdot B(X)+ \eta^2\cdot f(X) + \eta^3\cdot Q_B(X) + \eta^4\cdot P(X) -v}{X-\gamma}\]
+   \item \ver computes 
+   \[\c\defeq \a+\eta\cdot \b+\eta^2\cdot \f +\eta^3\cdot \qb + \eta^4\cdot \p\]
+   and  checks that 
+   \[e(\c-\enc1{v},\enc2{1})=e(\gamproof,\enc2{x-\gamma})\]
+  \end{enumerate}
+\item To perform a batched KZG check for the correctness of the values  $a_0,b_0$
+  \begin{enumerate}
+   \item \ver sends random $\lambda\in \F$. \prv and \ver separately compute
+   \[u\defeq a_0+\lambda \cdot b_0.\] 
+   \item \prv computes and sends $\zerproof\defeq \enc1{h_0(x)}$ for 
+   \[h_0(X)\defeq \frac{A(X)+\lambda\cdot B(X)}{X}\]
+   \item \ver computes 
+   \[\c_0 \defeq \a +\lambda \b\]
+   and  checks that 
+   \[e(\c_0-\enc1{u},\enc2{1})=e(\zerproof,\enc2{x})\]
+  \end{enumerate}
+
 \end{enumerate}
 
 
 
 \begin{lemma}\label{lem:computeQA}
-The element $q_A$ in Step \ref{step:computeQA} can be computed in  XX \G2 operations and $O(\witsize\log\witsize)$ \F operations
+The element $q_A$ in Step \ref{step:computeQA} can be computed in  \witruntime \G2-operations and $O(\witruntime)$ \F-operations
+\end{lemma}
+\begin{lemma}\label{lem:computeKZGproofs}
+The elements $\zerproof,\gamproof$ can be computed in  $2\cdot\witruntime$ \G1-operations and $O(\witruntime)$ \F-operations
 \end{lemma}
 
+\paragraph{Knowledge soundness proof:}
 
+Look at the following events 
 \bibliographystyle{alpha}
 \bibliography{references}
 \end{document}
