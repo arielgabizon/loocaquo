@@ -545,14 +545,39 @@ Lemma from mvlookup
 \begin{thm}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
 There is an algorithm that after a preprocessing step of $O(\tabsize\cdot \log \tabsize)$ operations.
-Given input $f\in \polysofdeg{\witsize}$ computes in $O(\witsize\cdot \log \witsize)$ \G2 operations
-$\cm=\enc2{Q(x)}$ where $Q\in \polysofdeg{\tabsize}$ is such that
+Given input $f\in \polysofdeg{\witsize}$ computes in % $O(\witsize\cdot \log \witsize)$ \G2 operations
+$O(\witsize)$ \G1 operations
+$\cm=\enc1{Q(x)}$ where $Q\in \polysofdeg{\tabsize}$ is such that
 \[f(X)\cdot T(X) = Q(X)\cdot Z_{\bigspace}(X) + R(X),\]
 for $R(X)\in \polysofdeg{\tabsize}$
 \end{thm}
-
+\begin{proof}
+    % need different notations than F_<n to indicate support in Lagrange basis,
+    % as this is what we want. Also changed to be in G1 to agree with other
+    % lemmas
+    By lemma \ref{lem:cq-compute}, the quotient commitments $\enc1{Q_i(X)}$ can be
+    computed in $O(\tabruntime)$ time. These satisfy the following equations
+    that depend only on $T(X)$, not $f(X)$, and so can be precomputed in a preprocessing
+    step.
+    \[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
+    By assumption, the polynomial $f(X)$ can be written as a linear combination of
+    the $\witsize$ Lagrange basis polynomials for the set $\subspace$
+    \[ f(X) = \sum_{i \in \subspace} f_i L_i(X) \]
+    Substituting this into the product with $T(X)$, and substituting each of the products
+    $L_i(X) T(X)$ with the appropriate cached quotient $Q_i(X)$ we find
+    \[ f(X) T(X) = \sum_{i \in \subspace} f_i L_i(X) T(X) =\sum_{i \in
+    \subspace} f_i t_i L_i(X) + f_i Z_\bigspace(X) Q_i(X) \] 
+    Rearranging terms and factoring out $Z_\bigspace(X)$, it follows that
+    commitments to both the quotient $Q(X)$ and remainder $R(X)$ can be computed in
+    $O(n)$ group operations.
+    \begin{gather*}
+        \enc1{Q(X)} = \sum_{i \in \subspace} f_i \enc1{Q_i(X)} \\
+        \enc1{R(X)} = \sum_{i \in \subspace} f_i t_i \enc1{L_i(X)}
+    \end{gather*}
+\end{proof}
 
 \begin{lemma}
+\label{lem:cq-compute}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
 There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
 $q_i\defeq \enc1{Q_i(x)}$
@@ -561,6 +586,40 @@ where $Q_i(X)\in \F[X]$ is such that
 in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
  
 \end{lemma}
+
+\begin{proof} 
+    Substituting the definition of the Lagrange polynomial
+    \[L_i(X) = \frac{Z_\bigspace(X)}{Z_\bigspace'(\omega^i) (X - \omega^i)}\]
+    We can write the quotient $Q_i(X)$ as the KZG opening for $T(\omega^i) = t_i$ scaled by
+    the derivative of $Z_\bigspace$ at $\omega^i$.
+    \[Q_i(X) = \frac{T(X) - t_i}{Z_\bigspace'(\omega^i) (X - \omega^i)} =
+    Z_\bigspace'(\omega^i)^{-1} K_i(X) \]
+    First, the algorithm needs to compute the coefficients $T(X) =
+    \sum_{i=0}^{\tabsize-1} \hat{t}_i X^i$ given the sequence of $t_i$ values. This is
+    possible in $O(\tabruntime)$ time using an FFT to interpolate $T(\omega^i) =
+    t_i$.
+
+    Then, the algorithm of Feist and Khovratovich \cite{} % https://alinush.github.io/2021/06/17/Feist-Khovratovich-technique-for-computing-KZG-proofs-fast.html
+    can be used to compute commitments to all the KZG proofs $\enc1{K_i(X)}$ for a
+    polynomial in $O(\tabruntime)$. This works by writing the vector of
+    $\enc1{K_i(X)}$ as a the product of a matrix with the vector of
+    $\enc1{X^i}$. This matrix is a DFT matrix times a Toeplitz matrix, both of
+    which have algorithms for evaluating matrix vector products in
+    $O(\tabruntime)$ operations. Thus, all the KZG proofs can be computed in
+    $O(\tabruntime)$ field operations and operations in \G1.
+    
+    Finally, the algorithm just needs to scale each $\enc1{K_i(X)}$ by
+    $Z_{\bigspace}'(\omega^i)$ to compute $\enc1{Q_i(X)}$. Conveniently, these
+    values admit a very simple description when $Z_\bigspace(X) = X^\tabsize -
+    1$ is a group of roots of unity.
+    \[Z_\bigspace'(X)^{-1} = (\tabsize X^{\tabsize-1})^{-1} \equiv X / \tabsize \mod Z_\bigspace(X)\] 
+
+    In total, the prover computes the coefficients of $T(X)$ in $O(\tabruntime)$
+    field operations, computes the KZG proofs for $T(\omega^i) = t_i$ in
+    $O(\tabruntime)$ group operations, and then scales these proofs by $\omega^i
+    / n$ in $O(\tabsize)$ group operations. In total, this takes
+    $O(\tabruntime)$ field and group operations in \G1.
+\end{proof}
 
 \begin{lemma}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
@@ -571,6 +630,18 @@ where $Q_i(X)\in \F[X]$ is such that
 in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
  
 \end{lemma}
+\begin{proof}
+    % why is this lemma necessary?
+    Note that the commitments here are just the commitments from
+    \ref{lem:cq-compute} scaled by $X^{d - \tabsize}$. Scaling a matrix-vector
+    product by a scalar is equivalent to scaling the vector and then multiplying
+    by the matrix. In this case, scaling the commitments by $X^{d - \tabsize}$ is
+    equivalent to performing the matrix multiplication on the vector of
+    commitments $\enc1{X^i}$ for $i \in [d-\tabsize, d-1]$. The rest of the
+    algorithm remains the same, so these $q_i$ can also be computed using
+    $O(\tabruntime)$ group operations.
+\end{proof}
+
 
 \section{Main protocol}
 \begin{dfn}\label{dfn:mainrelation}
