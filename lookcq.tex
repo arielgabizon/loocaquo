@@ -599,7 +599,7 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
     possible in $O(\tabruntime)$ time using an FFT to interpolate $T(\omega^i) =
     t_i$.
 
-    Then, the algorithm of Feist and Khovratovich \cite{} % https://alinush.github.io/2021/06/17/Feist-Khovratovich-technique-for-computing-KZG-proofs-fast.html
+    Then, the algorithm of Feist and Khovratovich \cite{fastkzgproofsorig, fastkzgproofs} 
     can be used to compute commitments to all the KZG proofs $\enc1{K_i(X)}$ for a
     polynomial in $O(\tabruntime)$. This works by writing the vector of
     $\enc1{K_i(X)}$ as a the product of a matrix with the vector of
