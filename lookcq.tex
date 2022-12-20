@@ -543,7 +543,7 @@ Lemma from mvlookup
 \section{Cached quotients}
 
 \begin{thm}
-Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
+Fix integer parameters $0\leq N\leq d$. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
 There is an algorithm that after a preprocessing step of $O(\tabsize\cdot \log \tabsize)$ operations.
 Given input $f\in \polysofdeg{\witsize}$ computes in $O(\witsize\cdot \log \witsize)$ \G2 operations
 $\cm=\enc2{Q(x)}$ where $Q\in \polysofdeg{\tabsize}$ is such that
@@ -553,7 +553,7 @@ for $R(X)\in \polysofdeg{\tabsize}$
 
 
 \begin{lemma}
-Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
+Fix integer parameters $0\leq N\leq d$. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
 There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
 $q_i\defeq \enc1{Q_i(x)}$
 where $Q_i(X)\in \F[X]$ is such that
@@ -565,7 +565,7 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
 \begin{lemma}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
 There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,d}}$ computes for $i\in [\tabsize]$, the elements 
-$q_i\defeq \enc1{^{d-\tabsize}\cdot Q_i(x)}$
+$q_i\defeq \enc1{x^{d-\tabsize}\cdot Q_i(x)}$
 where $Q_i(X)\in \F[X]$ is such that
 \[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
 in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
