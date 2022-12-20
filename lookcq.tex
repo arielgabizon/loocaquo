@@ -483,12 +483,12 @@ We resolve this issue by giving a protocol called \cq that is quasi-linear in \w
 \subsection{Comparison of results}
 
 Table with relative proof size, prover ops, verifier ops
-
+                proof-size
 caulk
 caulk+
 flookup
-baloo
-this work
+baloo         12 \G1, 1 \G2, 4 \F
+this work  6 G1, 1 G2
 
 \subsection{Technical Overview}
 \paragraph{The innovation of \caulk }
@@ -629,26 +629,27 @@ Input $(\cm,f)$.
 \item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
 \item \ver sends random $\alpha\in \F$.
 \item \prv computes and sends $\p=\enc1{P(x)}$ where
-\[P(X)\defeq A(X)\cdot X^{d-\tabsize} + \alpha\cdot B(X)X^{d-\witsize}\]
+\[P(X)\defeq A(X)\cdot X^{d-\tabsize} \]
 \item \ver sends random $\gamma \in \F$.
-\item \prv sends $\agam \defeq A(\gamma),\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
-\item \prv sends KZG proofs to all these poly openings.
-\item\label{step:checkqa} \ver checks that
-\[e(\a,\enc2{T(x)}+\enc2{\beta})=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
+\item \prv sends $\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
+\item\label{step:checkqa} \ver checks that $A$ encodes the correct values:
+\[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
+\item\label{step:checkadeg} \ver checks that $A$ has the appropriate degree:
+\[e(\a,\enc2{x^{d-\tabsize}})=e(\p,\enc2{1}).\]
 \item As part of checking the correctness of \qb, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and computes
 \[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}\]
 \item As part of  checking $P$ is correct, \ver computes 
-\[\pgam\defeq \agam\cdot \gamma^{d-\tabsize}+\alpha\bgam\cdot \gamma^{d-\witsize}\]
-\item To perform a batched KZG check for the correctness of the values  $\agam,\bgam,\fgam,\qbgam,\pgam$
+\[\pgam\defeq \bgam\cdot \gamma^{d-\witsize}\]
+\item To perform a batched KZG check for the correctness of the values  $\agam,\bgam,\fgam,\pgam$
   \begin{enumerate}
    \item \ver sends random $\eta\in \F$. \prv and \ver separately compute
-   \[v\defeq \agam+\eta\cdot \bgam +\eta^2\cdot\fgam + \eta^3\cdot \qbgam + \eta^4\cdot \pgam\]
+   \[v\defeq \bgam +\eta\cdot\fgam + \eta^2\cdot \qbgam + \eta^3\cdot \pgam\]
    \item \prv computes $\gamproof\defeq \enc1{h(x)}$ for 
-   \[h(X)\defeq \frac{A(X)+\eta\cdot B(X)+ \eta^2\cdot f(X) + \eta^3\cdot Q_B(X) + \eta^4\cdot P(X) -v}{X-\gamma}\]
+   \[h(X)\defeq \frac{ B(X)+ \eta\cdot f(X) + \eta^2\cdot Q_B(X) + \eta^3\cdot P(X) -v}{X-\gamma}\]
    \item \ver computes 
-   \[\c\defeq \a+\eta\cdot \b+\eta^2\cdot \f +\eta^3\cdot \qb + \eta^4\cdot \p\]
+   \[\c\defeq \b+\eta\cdot \f +\eta^2\cdot \qb + \eta^3\cdot \p\]
    and  checks that 
-   \[e(\c-\enc1{v},\enc2{1})=e(\gamproof,\enc2{x-\gamma})\]
+   \[e(\c-\enc1{v}+\gamma\cdot \gamproof,\enc2{1})=e(\gamproof,\enc2{x})\]
   \end{enumerate}
 \item To perform a batched KZG check for the correctness of the values  $a_0,b_0$
   \begin{enumerate}
@@ -664,7 +665,9 @@ Input $(\cm,f)$.
 
 \end{enumerate}
 
+\paragraph{Stats:}
 
+verifier pairings:4 - pair \a with random combination of $T$ and \enc2{x^{d-\tabsize}}, pair \qa with $Z_\bigspace$.
 
 \begin{lemma}\label{lem:computeQA}
 The element $q_A$ in Step \ref{step:computeQA} can be computed in  \witruntime \G2-operations and $O(\witruntime)$ \F-operations
