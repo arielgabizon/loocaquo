@@ -639,9 +639,9 @@ Input $(\cm,f)$.
 \item\label{step:checkadeg} \ver checks that $A$ has the appropriate degree:
 \[e(\a,\enc2{x^{d-\tabsize}})=e(\p,\enc2{1}).\]
  \end{enumerate}
-	\paragraph{\textbf{Round 3: Checking the identites for $B$ at random $\gamma \in \F$}}
+	\paragraph{\textbf{Round 3: Checking the identities for $B$ at random $\gamma \in \F$}}
  \begin{enumerate}
-\item \ver sends random $\gamma \in \F$.
+\item \ver sends random $\gamma,\eta,\zeta \in \F$.
 \item \prv sends $\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
 \item As part of checking the correctness of \qb, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and computes
 \[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}\]
@@ -660,12 +660,12 @@ Input $(\cm,f)$.
   \end{enumerate}
 \item To perform a batched KZG check for the correctness of the values  $a_0,b_0$
   \begin{enumerate}
-   \item \ver sends random $\lambda\in \F$. \prv and \ver separately compute
-   \[u\defeq a_0+\lambda \cdot b_0.\] 
+   \item  \prv and \ver separately compute
+   \[u\defeq a_0+\zeta \cdot b_0.\] 
    \item \prv computes and sends $\zerproof\defeq \enc1{h_0(x)}$ for 
-   \[h_0(X)\defeq \frac{A(X)+\lambda\cdot B(X)}{X}\]
+   \[h_0(X)\defeq \frac{A(X)+\zeta\cdot B(X)}{X}\]
    \item \ver computes 
-   \[\c_0 \defeq \a +\lambda \b\]
+   \[\c_0 \defeq \a +\zeta \b\]
    and  checks that 
    \[e(\c_0-\enc1{u},\enc2{1})=e(\zerproof,\enc2{x})\]
   \end{enumerate}
