@@ -613,9 +613,14 @@ Main protocol:
 Preprocessed inputs:
 \enc2{Z_\bigspace(x)}, \enc2{T(x)}
 Input $(\cm,f)$.
+	\paragraph{\textbf{Round 1:Committing to the multiplicites vector}} \ \\
 \begin{enumerate}
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
- \item \prv sends \enc1{m(x)}.
+ \item \prv sends $\m\defeq \enc1{m(x)}$.
+ \end{enumerate}
+	\paragraph{\textbf{Round 2:Interpolating the rational identity at a random $\beta$; checking the identity for $A$ using pairings}} \ \\
+ 
+\begin{enumerate}
  \item \ver chooses and sends random $\beta \in \F$.
 \item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(\tab_i+\beta)$.
 \item \prv sends $\a\defeq \enc1{A(x)}$.
@@ -627,15 +632,17 @@ Input $(\cm,f)$.
 \[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X)\]
 \item \prv computes and sends the value $a_0\defeq A(0)$.
 \item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
-\item \ver sends random $\alpha\in \F$.
 \item \prv computes and sends $\p=\enc1{P(x)}$ where
 \[P(X)\defeq A(X)\cdot X^{d-\tabsize} \]
-\item \ver sends random $\gamma \in \F$.
-\item \prv sends $\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
 \item\label{step:checkqa} \ver checks that $A$ encodes the correct values:
 \[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
 \item\label{step:checkadeg} \ver checks that $A$ has the appropriate degree:
 \[e(\a,\enc2{x^{d-\tabsize}})=e(\p,\enc2{1}).\]
+ \end{enumerate}
+	\paragraph{\textbf{Round 3: Checking the identites for $B$ at random $\gamma \in \F$}}
+ \begin{enumerate}
+\item \ver sends random $\gamma \in \F$.
+\item \prv sends $\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
 \item As part of checking the correctness of \qb, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and computes
 \[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}\]
 \item As part of  checking $P$ is correct, \ver computes 
