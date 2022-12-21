@@ -456,6 +456,7 @@
 \newcommand{\zgam}{\ensuremath{Z_{\bigspace,\gamma}}\xspace}
 \newcommand{\fgam}{\ensuremath{f_{\gamma}}\xspace}
 \newcommand{\pgam}{\ensuremath{P_{\gamma}}\xspace}
+\newcommand{\supp}[1]{\ensuremath{\mathrm{supp}(#1)}\xspace}
 
 \begin{document}
     \maketitle
@@ -541,38 +542,51 @@ Lemma from mvlookup
 \end{lemma}
 
 \section{Cached quotients}
+\paragraph{Notation:}
+In the section and the next, we use the following conventions.
+$\bigspace\subset \F$ denotes a mutliplicative subgroup of order $N$ which is a power of two.
+We denote by \vgen a generator of \bigspace. Hence, $\bigspace=\set{\vgen,\vgen^2,\ldots,\vgen^\tabsize =1}$.
+Given $P\in \F[X]$ and integer $i\in [\bigspace]$, we denote $P_i\defeq P(\vgen^i)$.
+For $i\in [\tabsize]$ we denote by $L_i\in\polysofdeg{\tabsize}$ the $i$'th Lagrange polynomial of \bigspace. Thus, $(L_i)_i=1$ and $(L_i)_j=0$ for $i\neq j\in [\tabsize]$. 
+
+For a polynomial $A(X)\in \polysofdeg{\tabsize}$, we say it is \witsize-sparse if $A_i\neq 0$ for at most \witsize values $i\in[\tabsize]$.
+The \emph{sparse representation} of such $A$ consists of the (at most) \witsize pairs $(i,A_i)$ such that $A_i\neq 0$.
+We denote $\supp{A}\defeq\set{i\in [\tabsize]| A_i\neq 0}$.
+The main result of this section is a method to compute a commitment to a quotient polynomial ``proving'' a product with a preprocessed polynomial $\mod\; Z_\bigspace(X)$, in a number of operations depending only on the degree of the polynomial of the other polynomial in the product. 
 
 \begin{thm}
-Fix integer parameters $0\leq N\leq d$. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
-There is an algorithm that after a preprocessing step of $O(\tabsize\cdot \log \tabsize)$ operations.
-Given input $f\in \polysofdeg{\witsize}$ computes in % $O(\witsize\cdot \log \witsize)$ \G2 operations
-$O(\witsize)$ \G1 operations
+Fix integer parameters $0\leq n\leq \leq N$ such that $n,N$ are powers of two. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs0=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize]}$ for some $x\in \F$. 
+There is an algorithm \alg that after a preprocessing step of $O(\tabruntime)$ \G1- and \F-operations starting with \srs0 does the following.
+Given input $A(X)\in \polysofdeg{\tabsize}$ that is \witsize-sparse and given in sparse representation, \alg computes in 
+$\witsize$ \F- and \G1-operations the element
 $\cm=\enc1{Q(x)}$ where $Q\in \polysofdeg{\tabsize}$ is such that
-\[f(X)\cdot T(X) = Q(X)\cdot Z_{\bigspace}(X) + R(X),\]
-for $R(X)\in \polysofdeg{\tabsize}$
+\[A(X)\cdot T(X) = Q(X)\cdot Z_{\bigspace}(X) + R(X),\]
+for $R(X)\in \polysofdeg{\tabsize}$.
 \end{thm}
 \begin{proof}
-    % need different notations than F_<n to indicate support in Lagrange basis,
-    % as this is what we want. Also changed to be in G1 to agree with other
-    % lemmas
-    By lemma \ref{lem:cq-compute}, the quotient commitments $\enc1{Q_i(X)}$ can be
-    computed in $O(\tabruntime)$ time. These satisfy the following equations
-    that depend only on $T(X)$, not $f(X)$, and so can be precomputed in a preprocessing
-    step.
-    \[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
-    By assumption, the polynomial $f(X)$ can be written as a linear combination of
-    the $\witsize$ Lagrange basis polynomials for the set $\subspace$
-    \[ f(X) = \sum_{i \in \subspace} f_i L_i(X) \]
+    The preprocessing step consists of computing the quotient commitments $\enc1{Q_i(X)}$ in $O(\tabruntime)$ operations, as described in Lemma \ref{lem:cq-compute}. As stated in the lemma,
+    for each $i\in[\tabsize]$ we have
+    \[L_i(X)\cdot T(X)=T_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X).\]
+    By assumption, the polynomial $A(X)$ can be written as a linear combination of
+    at most $\witsize$ summands in the Lagrange basis of $\bigspace$.
+    \[ A(X) = \sum_{i \in \supp{A}} A_i\cdot L_i(X) \]
     Substituting this into the product with $T(X)$, and substituting each of the products
     $L_i(X) T(X)$ with the appropriate cached quotient $Q_i(X)$ we find
-    \[ f(X) T(X) = \sum_{i \in \subspace} f_i L_i(X) T(X) =\sum_{i \in
-    \subspace} f_i t_i L_i(X) + f_i Z_\bigspace(X) Q_i(X) \] 
-    Rearranging terms and factoring out $Z_\bigspace(X)$, it follows that
-    commitments to both the quotient $Q(X)$ and remainder $R(X)$ can be computed in
-    $O(n)$ group operations.
+    \[ A(X) T(X) = \sum_{i\in \supp{A}} A_i\cdot  L_i(X) T(X) =\sum_{i \in
+    \supp{A}} A_i \cdot T_i L_i(X) + A_i\cdot Z_\bigspace(X) Q_i(X) \] 
+   \[=\sum_{i \in  \supp{A}} A_i \cdot T_i L_i(X) +Z_\bigspace(X)\cdot \sum_{i \in
+    \supp{A}} A_i \cdot Q_i(X).\] 
+Observing that the terms of the first sum are all of degree smaller than \tabsize, we get that
+
     \begin{gather*}
-        \enc1{Q(X)} = \sum_{i \in \subspace} f_i \enc1{Q_i(X)} \\
-        \enc1{R(X)} = \sum_{i \in \subspace} f_i t_i \enc1{L_i(X)}
+Q(X)=\sum_{i \in  \supp{A}} A_i \cdot Q_i(X) \\
+        R(X) = \sum_{i \in \supp{A}} A_i T_i \cdot L_i(X)
+    \end{gather*}
+    Hence, commitments to both the quotient $Q(X)$ and remainder $R(X)$ can be computed in
+   at most \witsize group operations as 
+    \begin{gather*}
+        \enc1{Q(X)} = \sum_{i \in \supp{A}} A_i \cdot \enc1{Q_i(X)} \\
+        \enc1{R(X)} = \sum_{i \in \supp{A}} A_i T_i \cdot \enc1{L_i(X)}
     \end{gather*}
 \end{proof}
 
@@ -582,7 +596,7 @@ Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \
 There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
 $q_i\defeq \enc1{Q_i(x)}$
 where $Q_i(X)\in \F[X]$ is such that
-\[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
+\[L_i(X)\cdot T(X)=T_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
 in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
  
 \end{lemma}
