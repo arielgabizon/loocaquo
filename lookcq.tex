@@ -90,7 +90,9 @@
 \newcommand{\bsigma}{\boldsymbol{\sigma}}
 \newcommand{\plonk}{\ensuremath{\mathcal{P} \mathfrak{lon}\mathcal{K}}\xspace}
 \newcommand{\cq}{\ensuremath{\mathpgoth{cq} }\xspace}
+\newcommand{\cqstar}{\ensuremath{\mathpgoth{cq^{\mathbf{*}} }}\xspace}
 \newcommand{\flookup}{\ensuremath{\mathsf{\mathpgoth{Flookup}}}\xspace}
+\newcommand{\baloo}{\ensuremath{\mathrm{ba}\mathit{loo}}\xspace}
 \newcommand{\caulkp}{\ensuremath{\mathsf{\mathrel{Caulk}\mathrel{\scriptstyle{+}}}}\xspace}
 \newcommand{\caulk}{\ensuremath{\mathsf{Caulk}}\xspace}
 \newcommand{\plookup}{\ensuremath{\mathpgoth{plookup}}\xspace}
@@ -461,11 +463,18 @@
 \begin{document}
     \maketitle
 \begin{abstract}
- We present a protocol for checking the values of a committed polynomial $\phi(X)\in \polysofdeg{\tabsize}$ over a multiplicative subgroup $\subspace\subset \F$ of size \witsize are contained in a
- table $T\in \F^\tabsize$. After an $O(\tabsize \log \tabsize)$ preprocessing step, the prover algorithm runs in time $O(\witsize\log \witsize)$. Thus, we continue to improve upon the recent breakthrough sequence of results\cite{caulk,caulkp,flookup,baloo} starting from \caulk~\cite{caulk}, which achieve sublinear complexity in the table size \tabsize. The two most recent works in this seqence \cite{flookup,baloo} achieved
+ We present a protocol for checking the values of a committed polynomial $f(X)\in \polysofdeg{\tabsize}$ over a multiplicative subgroup $\subspace\subset \F$ of size \witsize are contained in a
+ table $\tab\in \F^\tabsize$. After an $O(\tabsize \log \tabsize)$ preprocessing step, the prover algorithm runs in time $O(\witsize\log \witsize)$.
+ Thus, we continue to improve upon the recent breakthrough sequence of results\cite{caulk,caulkp,flookup,baloo} starting from \caulk~\cite{caulk}, which achieve sublinear complexity in the table size \tabsize. The two most recent works in this seqence \cite{flookup,baloo} achieved
  prover complexity $O(\witsize\cdot \log^2 \witsize)$.
  
- Moreover, as in \cite{caulk,caulkp,baloo} our construction relies on homomorphic table commitments, which makes them amenable to vector lookups in the manner described in Section 4 of \cite{plookup}.
+ Moreover, \cq has the following attractive features
+ \begin{enumerate}
+  \item As in \cite{caulk,caulkp,baloo} our construction relies on homomorphic table commitments, which makes them amenable to vector lookups in the manner described in Section 4 of \cite{plookup}.
+ \item As opposed to \cite{caulk,caulkp,flookup,baloo} the \cq verifier doesn't involve pairings with prover defined \G2 points, which makes recursive aggregation of proofs more convenient.
+ 
+\item The construction can be altered to a version we call \cqstar so that we lose the mentioned aggregability, increase preprocessing time to $O(\witsize\cdot \tabsize)$, and in return reduce prover complexity to a \emph{linear} number of field and group operations!
+ \end{enumerate}
  \end{abstract}
 
 % !TEX root = ../flookup.texV
@@ -482,6 +491,23 @@ However, the quadratic dependence on \witsize  of these works makes them impract
 We resolve this issue by giving a protocol called \cq that is quasi-linear in \witsize and has no dependence on \tabsize after the preprocessing step.
 
 \subsection{Comparison of results}
+\begin{table}[!htbp]
+	\caption{Scheme comparison. $\witsize$ = witness size, \tabsize = Table size, ``Aggregatable''= All prover defined pairing arguments in \G1}
+	\centering
+\begin{adjustbox}{width=1\textwidth}
+	\begin{tabular}{l|l|l|l|l|l|l}
+	\thead{Scheme} & \thead{Preprocessing} & \thead{Proof size} & \thead{Prover Work} & \thead{Verifier Work} & \thead{Homomorphic?} & \thead{Aggregatable?} \\ \hline
+		\caulk\cite{caulk}
+		        & O(\tabruntime) \F,\G1 & $14$ \G1, 1 \G2, 4 \F      & \makecell[l]{$3n + m - \ell$ \G1 exp, \\ $n$ \G2 exp} & $2$ \G1, $1$ \G2 & \cmark & \xmark \\ \hline
+		\caulkp\cite{caulkp} & $O(\tabruntime)$ \F,\G1 & $7$ \G1, $1$ \G2, $2$ \F      &   $18n$ \G1 exp      & $4$ \G1, $2$ $\F$ & \cmark & \xmark \\ \hline
+		\flookup\cite{flookup} & $O(\tabsize \log^2 \tabsize)$ \F,\G1             & $6$ \G1, $1$ \G2, $4$ \F  & $273n$ \G1 exp           & $20$ \G1, $16$ \F & \xmark & \xmark \\ \hline
+		\baloo\cite{baloo}       & $O(\tabruntime)$ \F,\G1   & $12$ \G1, $1$ \G2, $4$ \F    & $8n$ \G1 exp         & $6$ \G1, $4$ \F & \cmark & \xmark \\ \hline
+		\cq          & $O(\tabruntime)$ \F,\G1     & $3n + 3a$ \G1, $1$ \G2 & \makecell[l]{$11n + 11a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $7$ \G1, $6$ \F & \cmark & \cmark \\ \hline
+		\cqstar          &   $O(\tabsize\cdot \witsize)$ \F,\G1  & $n + a$ \G1, $1$ \G2 & \makecell[l]{$9n + 9a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $9$ \G1, $6$ \F & \cmark & \xmark \\ \hline
+	\end{tabular}
+\end{adjustbox}
+\label{table:prover-work}
+\end{table} \
 
 Table with relative proof size, prover ops, verifier ops
                 proof-size
@@ -556,7 +582,7 @@ We denote $\supp{A}\defeq\set{i\in [\tabsize]| A_i\neq 0}$.\\
 
 The main result of this section is a method to compute a commitment to a quotient polynomial - derived from a product with a preprocessed polynomial; in a number of operations depending only on the sparsity of the other polynomial in the product. 
 
-The result crucially relies on the following lemma using a result of Feist and Khovratovich\cite{fastkzgproofsorig}.
+The result crucially relies on the following lemma derived from a result of Feist and Khovratovich\cite{fastkzgproofsorig}.
 
 \begin{lemma}
 \label{lem:cq-compute}
@@ -570,21 +596,16 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
 \end{lemma}
 
 \begin{proof} 
-    Substituting the definition of the Lagrange polynomial
-    \[L_i(X) = \frac{Z_\bigspace(X)}{Z_\bigspace'(\vgen^i) (X - \vgen^i)}\]
-    We can write the quotient $Q_i(X)$ as the KZG opening for $T(\vgen^i) = T_i$ scaled by
-    the derivative of $Z_\bigspace$ at $\vgen^i$.
+    Recall the definition of the Lagrange polynomial
+    \[L_i(X) = \frac{Z_\bigspace(X)}{Z_\bigspace'(\vgen^i) (X - \vgen^i)}.\]
+    Substituting this definition, we can write the quotient $Q_i(X)$ as 
     \[Q_i(X) = \frac{T(X) - T_i}{Z_\bigspace'(\vgen^i) (X - \vgen^i)} =
     Z_\bigspace'(\omega^i)^{-1} K_i(X), \]
-%     First, the algorithm needs to compute the coefficients $T(X) =
-%     \sum_{i=0}^{\tabsize-1} \hat{t}_i X^i$ given the sequence of $t_i$ values. This is
-%     possible in $O(\tabruntime)$ time using an FFT to interpolate $T(\omega^i) =
-%     t_i$.
 for $K_i(X)\defeq \frac{T(X)-T_i}{X-\vgen^i}$.
 Note that the values \sett{\enc1{K_i(X)}}{i\in [\tabsize]} are exactly the KZG opening proofs of $T(X)$ at the
-elements of \subspace.
+elements of \bigspace.
     Thus, the algorithm of Feist and Khovratovich \cite{fastkzgproofsorig, fastkzgproofs} 
-    can be used to compute commitments to all the proofs $\enc1{K_i(X)}$ for a
+    can be used to compute commitments to all the proofs $\enc1{K_i(X)}$ 
     in $O(\tabruntime)$ \G1-operations. This works by writing the vector of
     $\enc1{K_i(X)}$ as a the product of a matrix with the vector of
     $\enc1{X^i}$. This matrix is a DFT matrix times a Toeplitz matrix, both of
