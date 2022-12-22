@@ -551,6 +551,46 @@ This protocol is amenable, because polynomials involved have sparsity depending 
 \subspace - small space
 \bigspace - big space
 Lagrange bases for big and small space
+\paragraph{Aurora lemma}
+\begin{lemma}\label{lem:aurora}
+ Let $H\subset \F$ be a multiplicative subgroup of size $t$.
+ For $f\in\polysofdeg{t}$, we have 
+\[\sum_{a\in H}f(a) = n\cdot a(0)\]
+\end{lemma}
+
+
+
+\subsection{Idealized verifier checks for algebraic adversaries}\label{subsec:agm}
+We introduce some terminology from \cite{plonk} to capture analysis in the Algebraic Group Model of Fuchsbauer, Kiltz and Loss\cite{AGM}.
+
+First we say our \srs0 \emph{has degree $Q$} if all elements of \srsi are of the form  \enci{f(x)} for $f\in \polysofdeg{Q}$ and uniform $x\in \F$. In the following discussion let us assume we are executing a protocol with a degree $Q$ SRS, and denote by $f_{i,j}$ the corresponding polynomial for the $j$'th element of \srsi.
+
+Denote by $a,b$ the vectors of $\F$-elements whose encodings in $\G1,\G2$ an algebraic adversary \adv outputs during a protocol execution; e.g., the $j$'th $\G1$ element output by \adv is \enc1{a_j}.
+
+By a ``real pairing check'' we mean a check of the form
+\[(a\cdot T_1) \cdot (T_2\cdot b)=0\]
+for some matrices $T_1,T_2$ over $\F$.
+Note that such a check can indeed be done efficiently given the encoded elements and the pairing function $e:\G1\times \G2\to \Gt$.
+
+
+
+Given such a ``real pairing check'', and the adversary \adv and protocol execution during which the elements were output, define the corresponding ``ideal check'' as follows.
+Since \adv is algebraic when he outputs \enci{a_j} he also outputs a vector $v$ such that, from linearity, $a_j = \sum v_\ell f_{i,\ell}(x)=R_{i,j}(x)$ for $R_{i,j}(X) \defeq \sum v_\ell f_{i,\ell}(X)$.
+Denote, for $i\in \set{1,2}$ the vector of polynomials $R_i=(R_{i,j})_j$.
+The corresponding ideal check, checks as a polynomial identity whether
+\[(R_1 \cdot T_1)\cdot (T_2\cdot R_2) \equiv 0\]
+
+
+The following lemma is inspired by \cite{AGM}'s analysis of \cite{Groth16},
+and tells us that for soundness analysis against algebraic adversaries it suffices to look at ideal checks.
+Before stating the lemma we define the $Q$-DLOG assumption similarly to \cite{AGM}.
+\begin{dfn}\label{ref:qdlog}
+ Fix integer $Q$. The \emph{$Q$-DLOG assumption for $(\G1,\G2)$} states that given 
+ \[\enc1{1},\enc1{x},\ldots,\enc1{x^Q},\enc2{1},\enc2{x},\ldots,\enc2{x^Q}\]
+ for uniformly chosen $x\in \F$, the probability of an efficient \adv outputting $x$
+ is \negl.
+\end{dfn}
+
 
 
 \begin{lemma}\label{lem:AGManalysis}
@@ -710,7 +750,7 @@ Relations dependent on srs.
 Tuple \gen,\isintable
 \begin{itemize}
  \item $\gen(\tab,\tabsize)\to \srs0$
- \item $\isintable$ a protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has \enc1{f(x)}.
+ \item $\isintable$ an interactive public coin protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has \enc1{f(x)}.
  Both have \tab and \srs0.
  such that
  \begin{itemize}
@@ -724,7 +764,7 @@ Tuple \gen,\isintable
  \item \adv and \ver engage in the protocol $\isintable(\tab,\cm)$ with \adv taking the role of \prv.
  \item \adv wins if 
  \begin{itemize}
-  \item \ver outputs \acc
+  \item \ver outputs \acc, and
   \item $\restricttoset{f}{\subspace}\not\subset \tab$.
  \end{itemize}
 
@@ -765,8 +805,8 @@ Input $(\cm,f)$.
 	\paragraph{\textbf{Round 3: Checking the identity for $B$ at random $\gamma \in \F$}}
  \begin{enumerate}
 \item \ver sends random $\gamma,\eta,\zeta \in \F$.
-\item \prv sends $\bgam \defeq B(\gamma),\qbgam \defeq Q_B(\gamma),\fgam \defeq f(\gamma)$.
-\item As part of checking the correctness of $B$, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and
+\item \prv sends $\bgam \defeq B(\gamma),\fgam \defeq f(\gamma)$.
+\item\label{step:setQB} As part of checking the correctness of $B$, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and
 \[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}.\]
 \item To perform a batched KZG check for the correctness of the values  $\agam,\bgam,\fgam$
   \begin{enumerate}
@@ -774,7 +814,7 @@ Input $(\cm,f)$.
    \[v\defeq \bgam +\eta\cdot\fgam + \eta^2\cdot \qbgam.\]
    \item \prv computes $\gamproof\defeq \enc1{h(x)}$ for 
    \[h(X)\defeq \frac{ B(X)+ \eta\cdot f(X) + \eta^2\cdot Q_B(X) -v}{X-\gamma}\]
-   \item \ver computes 
+   \item\label{step:checkKZG1} \ver computes 
    \[\c\defeq \b+\eta\cdot \f +\eta^2\cdot \qb\]
    and  checks that 
    \[e(\c-\enc1{v}+\gamma\cdot \gamproof,\enc2{1})=e(\gamproof,\enc2{x})\]
@@ -785,7 +825,7 @@ Input $(\cm,f)$.
    \[u\defeq a_0+\zeta \cdot b_0.\] 
    \item \prv computes and sends $\zerproof\defeq \enc1{h_0(x)}$ for 
    \[h_0(X)\defeq \frac{A(X)+\zeta\cdot B(X)}{X}\]
-   \item \ver computes 
+   \item\label{step:checkKZG2} \ver computes 
    \[\c_0 \defeq \a +\zeta \b\]
    and  checks that 
    \[e(\c_0-\enc1{u},\enc2{1})=e(\zerproof,\enc2{x})\]
@@ -821,21 +861,39 @@ As \adv is algebraic, when sending the commitments \m,\a,\b,\p,\qa,\qb,\gamproof
 Let $E$ be the event \ver outputs \acc.
 Note that the event that \adv wins the game is contained in $E$. 
 $E$ implies all pairing checks passed.
-Let $E`\subset E$ be the event that one of the corresponding ideal pairing checks didn't pass.
-According to Lemma \ref{lem:AGManalysis}, $\prob(E`=\negl)$.
-We'll show that the event that \adv wins is contained in $E`$.
-Let $E_1=E\setminus E`$.
-Given $E_1$ we have
-\[A(X)(T(X)+\beta)-M(X) = Q_A(X)\cdot Z_\bigspace(X)\]
+Let $A\subset E$ be the event that one of the corresponding ideal pairing checks didn't pass.
+According to Lemma \ref{lem:AGManalysis}, $\prob(A=\negl)$.
+% We'll show that the event that \adv wins is contained in $E`$.
+% Let $E_1=E\setminus E`$.
+Given $A$ didn't occur, we have
+\begin{itemize}
+ \item From step \ref{step:checkqa} \[A(X)(T(X)+\beta)-M(X) = Q_A(X)\cdot Z_\bigspace(X)\]
 Which means that for all $i\in [\tabsize]$,
 \[A_i=\frac{M_i}{T_i+\beta)}\]
 
+\item From step  \ref{step:checkadeg}
+\[X^{d-\tabsize}A(X)+\alpha\cdot X^{d-\witsize}B(X)=P(X),\]
+which implies e.w.p. $1/|\F|$ over $\alpha\in \F$, that $\deg(A)<\tabsize$ and $\deg(B)<\witsize$.
+
+\item From the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ that
+$\bgam = B(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0),b_0=B(0)$.
+
+\item Which implies by how \qbgam is set in step \ref{step:setQB}  that e.w.p. $(2\witsize)/|\F|$ over $\gamma$ 
+\[B(X)\cdot (f(X)+\beta)=1+ Q_B(X)Z_\subspace(X),\]
+which implies for all $i\in [\witsize]$ that
+$B(\hgen^i)=\frac{1}{f(\hgen^i)+\beta}$.
+\item We know have using Lemma \ref{lem:aurora} that
+\[\tabsize\cdot a_0 = \sum_{i\in [\tabsize]} A_i = \sum_{i\in [\tabsize]}\frac{m_i}{T_i+\beta)}\]
+\[\witsize\cdot b_0 = \sum_{i\in [\witsize]} B(\hgen^i) = \sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+\beta}\]
+Thus e.w.p. $(\witsize\cdot \tabsize)/|\F|$ over $\beta\in \F$, we have that
+\[\sum_{i\in [\tabsize]}\frac{m_i}{T_i+X)}=\sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+X},\]
+which implies $\restricttoset{f}{\subspace}\in \tab$.
+\end{itemize}
+In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
+is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
 
 
 
-
-As \adv is algebraic we can assume 
-Look at the following events 
 \bibliographystyle{alpha}
 \bibliography{references}
 \end{document}
