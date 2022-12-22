@@ -734,15 +734,7 @@ Q(X)=\sum_{i \in  \supp{A}} A_i \cdot Q_i(X) \\
 \end{proof}
 
 
-\section{Main protocol}
-\begin{dfn}\label{dfn:mainrelation}
- \rel is all pairs $(\cm,f)$
- such that \cm is a commitment to $f$ and $f|_\subspace \subset T$.
- 
- ..bla  problem is relation is defined only after srs is chosen
-\end{dfn}
-
-\subsection{Definitions}
+\section{\cq - our main protocol}
 \begin{dfn}\label{dfn:lookupprot}
 Ad-hoc dfn of ks protocol for table lookup
 
@@ -875,7 +867,7 @@ Which means that for all $i\in [\tabsize]$,
 \[X^{d-\tabsize}A(X)+\alpha\cdot X^{d-\witsize}B(X)=P(X),\]
 which implies e.w.p. $1/|\F|$ over $\alpha\in \F$, that $\deg(A)<\tabsize$ and $\deg(B)<\witsize$.
 
-\item From the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ that
+\item From the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an expalantion of the correctness of batched KZG \cite{kate}). 
 $\bgam = B(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0),b_0=B(0)$.
 
 \item Which implies by how \qbgam is set in step \ref{step:setQB}  that e.w.p. $(2\witsize)/|\F|$ over $\gamma$ 
@@ -892,6 +884,97 @@ which implies $\restricttoset{f}{\subspace}\in \tab$.
 In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
 
+\section{\cqstar}
+
+\begin{dfn}\label{dfn:lookupprot}
+Ad-hoc dfn of ks protocol for table lookup
+
+Relations dependent on srs.
+Tuple \gen,\isintable
+\begin{itemize}
+ \item $\gen(\tab,\tabsize)\to \srs0$
+ \item $\isintable$ an interactive public coin protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has \enc1{f(x)}.
+ Both have \tab and \srs0.
+ such that
+ \begin{itemize}
+  \item Completeness:If $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
+  \item Knowledge soundness in the algebraic group model:
+   For any $\tab\in\F^\witsize$, the probability of any algebraic \adv to win the following game is \negl
+
+\begin{enumerate}
+ \item Let $\srs0=\gen(\tab,\tabsize)$.
+ \item \adv sends a message \cm and values $f_1,\ldots, f_\witsize$ such that $\cm=\sumi{\witsize}f_i\cdot \enc1{L_i(x)}$.
+ \item \adv and \ver engage in the protocol $\isintable(\tab,\cm)$ with \adv taking the role of \prv.
+ \item \adv wins if 
+ \begin{itemize}
+  \item \ver outputs \acc, and
+  \item $\restricttoset{f}{\subspace}\not\subset \tab$.
+ \end{itemize}
+
+\end{enumerate}
+\end{itemize}
+\end{itemize}
+\end{dfn}
+Main protocol:
+Preprocessed inputs:
+\enc2{Z_\bigspace(x)}, \enc2{T(x)}
+Input $(\cm,f)$.
+	\paragraph{\textbf{Round 1:Committing to the multiplicites vector}} \ \\
+\begin{enumerate}
+ \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
+ \item \prv sends $\m\defeq \enc1{m(x)}$.
+ \end{enumerate}
+	\paragraph{\textbf{Round 2:Interpolating the rational identity at a random $\beta$; checking the identity for $A$ using pairings, degree checks for $A,B$}} \ \\
+ 
+\begin{enumerate}
+ \item \ver chooses and sends random $\alpha,\beta \in \F$.
+\item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(\tab_i+\beta)$.
+\item \prv sends $\a\defeq \enc1{A(x)}$.
+\item\label{step:computeQA} \prv computes $\qa \defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
+\[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
+\item \prv computes $B\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
+\item \prv sends $\qb\defeq \enc1{B(x)}$.
+\item \prv computes $Q_B(X)$ such that 
+\[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X)\]
+\item \prv computes and sends the value $a_0\defeq A(0)$.
+\item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
+\item \prv computes and sends $\p=\enc1{P(x)}$ where
+\[P(X)\defeq A(X)\cdot X^{d-\tabsize}+\alpha\cdot B(X)\cdot X^{d-\witsize}. \]
+\item\label{step:checkqa} \ver checks that $A$ encodes the correct values:
+\[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
+\item\label{step:checkadeg} \ver checks that $A,B$ have the appropriate degrees:
+\[e\left(\a,\enc2{x^{d-\tabsize}}\right)\cdot e\left(\alpha\cdot \b,\enc2{x^{d-\witsize}}\right)=e(\p,\enc2{1}).\]
+ \end{enumerate}
+	\paragraph{\textbf{Round 3: Checking the identity for $B$ at random $\gamma \in \F$}}
+ \begin{enumerate}
+\item \ver sends random $\gamma,\eta,\zeta \in \F$.
+\item \prv sends $\bgam \defeq B(\gamma),\fgam \defeq f(\gamma)$.
+\item\label{step:setQB} As part of checking the correctness of $B$, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and
+\[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}.\]
+\item To perform a batched KZG check for the correctness of the values  $\agam,\bgam,\fgam$
+  \begin{enumerate}
+   \item \ver sends random $\eta\in \F$. \prv and \ver separately compute
+   \[v\defeq \bgam +\eta\cdot\fgam + \eta^2\cdot \qbgam.\]
+   \item \prv computes $\gamproof\defeq \enc1{h(x)}$ for 
+   \[h(X)\defeq \frac{ B(X)+ \eta\cdot f(X) + \eta^2\cdot Q_B(X) -v}{X-\gamma}\]
+   \item\label{step:checkKZG1} \ver computes 
+   \[\c\defeq \b+\eta\cdot \f +\eta^2\cdot \qb\]
+   and  checks that 
+   \[e(\c-\enc1{v}+\gamma\cdot \gamproof,\enc2{1})=e(\gamproof,\enc2{x})\]
+  \end{enumerate}
+\item To perform a batched KZG check for the correctness of the values  $a_0,b_0$
+  \begin{enumerate}
+   \item  \prv and \ver separately compute
+   \[u\defeq a_0+\zeta \cdot b_0.\] 
+   \item \prv computes and sends $\zerproof\defeq \enc1{h_0(x)}$ for 
+   \[h_0(X)\defeq \frac{A(X)+\zeta\cdot B(X)}{X}\]
+   \item\label{step:checkKZG2} \ver computes 
+   \[\c_0 \defeq \a +\zeta \b\]
+   and  checks that 
+   \[e(\c_0-\enc1{u},\enc2{1})=e(\zerproof,\enc2{x})\]
+  \end{enumerate}
+
+\end{enumerate}
 
 
 \bibliographystyle{alpha}
