@@ -446,6 +446,7 @@
 \renewcommand{\b}{\ensuremath{\mathsf{b}}\xspace}
 \renewcommand{\c}{\ensuremath{\mathsf{c}}\xspace}
 \newcommand{\f}{\ensuremath{\mathsf{f}}\xspace}
+\newcommand{\ftwo}{\ensuremath{\mathsf{f}_2}\xspace}
 \renewcommand{\p}{\ensuremath{\mathsf{p}}\xspace}
 \newcommand{\qa}{\ensuremath{\mathsf{q_a}}\xspace}
 \newcommand{\qb}{\ensuremath{\mathsf{q_b}}\xspace}
@@ -503,7 +504,7 @@ We resolve this issue by giving a protocol called \cq that is quasi-linear in \w
 		\flookup\cite{flookup} & $O(\tabsize \log^2 \tabsize)$ \F,\G1             & $6$ \G1, $1$ \G2, $4$ \F  & $273n$ \G1 exp           & $20$ \G1, $16$ \F & \xmark & \xmark \\ \hline
 		\baloo\cite{baloo}       & $O(\tabruntime)$ \F,\G1   & $12$ \G1, $1$ \G2, $4$ \F    & $8n$ \G1 exp         & $6$ \G1, $4$ \F & \cmark & \xmark \\ \hline
 		\cq          & $O(\tabruntime)$ \F,\G1     & $8$ \G1, $4$ \F & \makecell[l]{$11n + 11a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $7$ \G1, $6$ \F & \cmark & \cmark \\ \hline
-		\cqstar          &   $O(\tabsize\cdot \witsize)$ \F,\G1  & $n + a$ \G1, $1$ \G2 & \makecell[l]{$9n + 9a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $9$ \G1, $6$ \F & \cmark & \xmark \\ \hline
+		\cqstar          &   \makecell[l]{$O(\tabruntime + \tabsize\cdot \witruntime)$ \F,\G1 \\ $O(\witruntime)$ \G2}  & $6$ \G1, $1$ \G2, $1$ \F & \makecell[l]{$9n + 9a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $9$ \G1, $6$ \F & \cmark & \xmark \\ \hline
 	\end{tabular}
 \end{adjustbox}
 \label{table:prover-work}
@@ -671,28 +672,6 @@ elements of \bigspace.
     $O(\tabruntime)$ field and group operations in \G1.
 \end{proof}
 
-% \begin{corollary}
-% Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
-% There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,d}}$ computes for $i\in [\tabsize]$, the elements 
-% $q_i\defeq \enc1{x^{d-\tabsize}\cdot Q_i(x)}$
-% where $Q_i(X)\in \F[X]$ is such that
-% \[L_i(X)\cdot T(X)=t_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
-% in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
-%  
-% \end{corollary}
-% \begin{proof}
-%     why is this lemma necessary?
-%     Note that the commitments here are just the commitments from
-%     \ref{lem:cq-compute} scaled by $X^{d - \tabsize}$. Scaling a matrix-vector
-%     product by a scalar is equivalent to scaling the vector and then multiplying
-%     by the matrix. In this case, scaling the commitments by $X^{d - \tabsize}$ is
-%     equivalent to performing the matrix multiplication on the vector of
-%     commitments $\enc1{X^i}$ for $i \in [d-\tabsize, d-1]$. The rest of the
-%     algorithm remains the same, so these $q_i$ can also be computed using
-%     $O(\tabruntime)$ group operations.
-% \end{proof}
-% 
-
 We're now ready to state the main theorem of this section.
 
 \begin{thm}
@@ -734,11 +713,9 @@ Q(X)=\sum_{i \in  \supp{A}} A_i \cdot Q_i(X) \\
 \end{proof}
 
 
-\section{\cq - our main protocol}
+\section{$\cq\;$ - our main protocol}
 \begin{dfn}\label{dfn:lookupprot}
-Ad-hoc dfn of ks protocol for table lookup
 
-Relations dependent on srs.
 Tuple \gen,\isintable
 \begin{itemize}
  \item $\gen(\tab,\tabsize)\to \srs0$
@@ -768,12 +745,12 @@ Main protocol:
 Preprocessed inputs:
 \enc2{Z_\bigspace(x)}, \enc2{T(x)}
 Input $(\cm,f)$.
-	\paragraph{\textbf{Round 1:Committing to the multiplicites vector}} \ \\
+	\paragraph{\textbf{Round 1:} Committing to the multiplicites vector} \ \\
 \begin{enumerate}
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
  \item \prv sends $\m\defeq \enc1{m(x)}$.
  \end{enumerate}
-	\paragraph{\textbf{Round 2:Interpolating the rational identity at a random $\beta$; checking the identity for $A$ using pairings, degree checks for $A,B$}} \ \\
+	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree checks for $A,B$ using pairings} \ \\
  
 \begin{enumerate}
  \item \ver chooses and sends random $\alpha,\beta \in \F$.
@@ -794,7 +771,7 @@ Input $(\cm,f)$.
 \item\label{step:checkadeg} \ver checks that $A,B$ have the appropriate degrees:
 \[e\left(\a,\enc2{x^{d-\tabsize}}\right)\cdot e\left(\alpha\cdot \b,\enc2{x^{d-\witsize}}\right)=e(\p,\enc2{1}).\]
  \end{enumerate}
-	\paragraph{\textbf{Round 3: Checking the identity for $B$ at random $\gamma \in \F$}}
+	\paragraph{\textbf{Round 3:} Checking correctness of  $B$ at random $\gamma \in \F$}
  \begin{enumerate}
 \item \ver sends random $\gamma,\eta,\zeta \in \F$.
 \item \prv sends $\bgam \defeq B(\gamma),\fgam \defeq f(\gamma)$.
@@ -886,82 +863,44 @@ is contained in a constant number of events with probability \negl; and so \cq s
 
 \section{\cqstar}
 
-\begin{dfn}\label{dfn:lookupprot}
-Ad-hoc dfn of ks protocol for table lookup
-
-Relations dependent on srs.
-Tuple \gen,\isintable
-\begin{itemize}
- \item $\gen(\tab,\tabsize)\to \srs0$
- \item $\isintable$ an interactive public coin protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has \enc1{f(x)}.
- Both have \tab and \srs0.
- such that
- \begin{itemize}
-  \item Completeness:If $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
-  \item Knowledge soundness in the algebraic group model:
-   For any $\tab\in\F^\witsize$, the probability of any algebraic \adv to win the following game is \negl
-
-\begin{enumerate}
- \item Let $\srs0=\gen(\tab,\tabsize)$.
- \item \adv sends a message \cm and values $f_1,\ldots, f_\witsize$ such that $\cm=\sumi{\witsize}f_i\cdot \enc1{L_i(x)}$.
- \item \adv and \ver engage in the protocol $\isintable(\tab,\cm)$ with \adv taking the role of \prv.
- \item \adv wins if 
- \begin{itemize}
-  \item \ver outputs \acc, and
-  \item $\restricttoset{f}{\subspace}\not\subset \tab$.
- \end{itemize}
-
-\end{enumerate}
-\end{itemize}
-\end{itemize}
-\end{dfn}
 Main protocol:
 Preprocessed inputs:
 \enc2{Z_\bigspace(x)}, \enc2{T(x)}
 Input $(\cm,f)$.
-	\paragraph{\textbf{Round 1:Committing to the multiplicites vector}} \ \\
+	\paragraph{\textbf{Round 1:} Committing to the multiplicites vector, and $f$ in \G2} \ \\
 \begin{enumerate}
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
  \item \prv sends $\m\defeq \enc1{m(x)}$.
+ \item \prv sends $\ftwo \defeq \enc2{f(x)}$
+ \item \ver checks correctness of \ftwo via
+ \[e(\f,\enc2{1})=e(\enc1{1},\ftwo).\]
  \end{enumerate}
-	\paragraph{\textbf{Round 2:Interpolating the rational identity at a random $\beta$; checking the identity for $A$ using pairings, degree checks for $A,B$}} \ \\
+	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of degrees and values of  $A,B$ using pairings} \ \\
  
 \begin{enumerate}
  \item \ver chooses and sends random $\alpha,\beta \in \F$.
 \item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(\tab_i+\beta)$.
 \item \prv sends $\a\defeq \enc1{A(x)}$.
-\item\label{step:computeQA} \prv computes $\qa \defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
+\item\label{qstr-step:computeQA} \prv computes $\qa \defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
 \[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
 \item \prv computes $B\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
 \item \prv sends $\qb\defeq \enc1{B(x)}$.
-\item \prv computes $Q_B(X)$ such that 
+\item \prv computes $\qb\defeq \enc1{Q_B(X)}$ such that 
 \[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X)\]
 \item \prv computes and sends the value $a_0\defeq A(0)$.
 \item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
 \item \prv computes and sends $\p=\enc1{P(x)}$ where
 \[P(X)\defeq A(X)\cdot X^{d-\tabsize}+\alpha\cdot B(X)\cdot X^{d-\witsize}. \]
-\item\label{step:checkqa} \ver checks that $A$ encodes the correct values:
+\item\label{qstr-step:checkqa} \ver checks that $A$ encodes the correct values:
 \[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
-\item\label{step:checkadeg} \ver checks that $A,B$ have the appropriate degrees:
+\item\label{qstr-step:checkqb} \ver checks that $B$ encodes the correct values:
+\[e(\b,\enc2{\f}+\enc2{\beta} )=e(\qb,\enc2{Z_\subspace(x)})\cdot e(\enc1{1},\enc2{1})\]
+\item\label{qstr-step:checkadeg} \ver checks that $A,B$ have the appropriate degrees:
 \[e\left(\a,\enc2{x^{d-\tabsize}}\right)\cdot e\left(\alpha\cdot \b,\enc2{x^{d-\witsize}}\right)=e(\p,\enc2{1}).\]
  \end{enumerate}
-	\paragraph{\textbf{Round 3: Checking the identity for $B$ at random $\gamma \in \F$}}
+	\paragraph{\textbf{Round 3: Checking correctness of $A(0),B(0)$}}
  \begin{enumerate}
-\item \ver sends random $\gamma,\eta,\zeta \in \F$.
-\item \prv sends $\bgam \defeq B(\gamma),\fgam \defeq f(\gamma)$.
-\item\label{step:setQB} As part of checking the correctness of $B$, \ver computes $ Z_\subspace(\gamma) = \gamma^\witsize -1$ and
-\[\qbgam\defeq \frac{\bgam\cdot (\fgam + \beta)-1}{Z_\subspace(\gamma)}.\]
-\item To perform a batched KZG check for the correctness of the values  $\agam,\bgam,\fgam$
-  \begin{enumerate}
-   \item \ver sends random $\eta\in \F$. \prv and \ver separately compute
-   \[v\defeq \bgam +\eta\cdot\fgam + \eta^2\cdot \qbgam.\]
-   \item \prv computes $\gamproof\defeq \enc1{h(x)}$ for 
-   \[h(X)\defeq \frac{ B(X)+ \eta\cdot f(X) + \eta^2\cdot Q_B(X) -v}{X-\gamma}\]
-   \item\label{step:checkKZG1} \ver computes 
-   \[\c\defeq \b+\eta\cdot \f +\eta^2\cdot \qb\]
-   and  checks that 
-   \[e(\c-\enc1{v}+\gamma\cdot \gamproof,\enc2{1})=e(\gamproof,\enc2{x})\]
-  \end{enumerate}
+\item \ver sends random $\zeta \in \F$.
 \item To perform a batched KZG check for the correctness of the values  $a_0,b_0$
   \begin{enumerate}
    \item  \prv and \ver separately compute
@@ -973,9 +912,16 @@ Input $(\cm,f)$.
    and  checks that 
    \[e(\c_0-\enc1{u},\enc2{1})=e(\zerproof,\enc2{x})\]
   \end{enumerate}
-
 \end{enumerate}
 
+\paragraph{Stats:}
+
+verifier pairings:5 - pair \a with random combination of $T$ and \enc2{x^{d-\tabsize}}, pair \qa with $Z_\bigspace$.
+pair \b with \enc2{d-\witsize} for degree check.
+Proof size - 6 \G1 - \a,\b,\p,\m,\qa,\qb,\zerproof    
+                      1 \G2 - \ftwo
+                      1 \F- $a_0$
+                     
 
 \bibliographystyle{alpha}
 \bibliography{references}
