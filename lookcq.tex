@@ -500,12 +500,12 @@ We resolve this issue by giving a protocol called \cq that is quasi-linear in \w
 	\begin{tabular}{l|l|l|l|l|l|l}
 	\thead{Scheme} & \thead{Preprocessing} & \thead{Proof size} & \thead{Prover Work} & \thead{Verifier Work} & \thead{Homomorphic?} & \thead{Aggregatable?} \\ \hline
 		\caulk\cite{caulk}
-		        & O(\tabruntime) \F,\G1 & $14$ \G1, 1 \G2, 4 \F      & \makecell[l]{$3n + m - \ell$ \G1 exp, \\ $n$ \G2 exp} & $2$ \G1, $1$ \G2 & \cmark & \xmark \\ \hline
-		\caulkp\cite{caulkp} & $O(\tabruntime)$ \F,\G1 & $7$ \G1, $1$ \G2, $2$ \F      &   $18n$ \G1 exp      & $4$ \G1, $2$ $\F$ & \cmark & \xmark \\ \hline
-		\flookup\cite{flookup} & $O(\tabsize \log^2 \tabsize)$ \F,\G1             & $6$ \G1, $1$ \G2, $4$ \F  & $273n$ \G1 exp           & $20$ \G1, $16$ \F & \xmark & \xmark \\ \hline
-		\baloo\cite{baloo}       & $O(\tabruntime)$ \F,\G1   & $12$ \G1, $1$ \G2, $4$ \F    & $8n$ \G1 exp         & $6$ \G1, $4$ \F & \cmark & \xmark \\ \hline
-		\cq          & $O(\tabruntime)$ \F,\G1     & $8$ \G1, $4$ \F & \makecell[l]{$11n + 11a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $7$ \G1, $6$ \F & \cmark & \cmark \\ \hline
-		\cqstar          &   \makecell[l]{$O(\tabruntime + \tabsize\cdot \witruntime)$ \F,\G1 \\ $O(\witruntime)$ \G2}  & $6$ \G1, $1$ \G2, $1$ \F & \makecell[l]{$9n + 9a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $9$ \G1, $6$ \F & \cmark & \xmark \\ \hline
+		        & O(\tabruntime) \F,\G1 & $14$ \G1, 1 \G2, 4 \F      &   $O(\witsize^2+\witsize \cdot \log(\tabsize))$ \F,\G1 & $4P$  & \cmark & \xmark \\ \hline
+		\caulkp\cite{caulkp} & $O(\tabruntime)$ \F,\G1 & $7$ \G1, $1$ \G2, $2$ \F      &   14\witsize \G1, \witsize \G2, $O(\witsize^2)$ \F,\G1& $3P$ & \cmark & \xmark \\ \hline
+		\flookup\cite{flookup} & $O(\tabsize \log^2 \tabsize)$ \F,\G1             & $6$ \G1, $1$ \G2, $4$ \F  & $6\witsize$ \G1, \witsize \G2, $O(\witsize\log^2\witsize)$ \F        & $3P$ & \xmark & \xmark \\ \hline
+		\baloo\cite{baloo}       & $O(\tabruntime)$ \F,\G1   & $12$ \G1, $1$ \G2, $4$ \F    & $13n$ \G1 $n$ \G2, $O(n\log^2n)$ \F         & $5P$ & \cmark & \xmark \\ \hline
+		\cq (this work)         & $O(\tabruntime)$ \F,\G1     & $8$ \G1, $4$ \F & $8n$ \G1, $O(n\log n)$ \F  & $5P$ & \cmark & \cmark \\ \hline
+% 		\cqstar          &   \makecell[l]{$O(\tabruntime + \tabsize\cdot \witruntime)$ \F,\G1 \\ $O(\witruntime)$ \G2}  & $6$ \G1, $1$ \G2, $1$ \F & \makecell[l]{$9n + 9a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $9$ \G1, $6$ \F & \cmark & \xmark \\ \hline
 	\end{tabular}
 \end{adjustbox}
 \label{table:prover-work}
@@ -782,7 +782,7 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
  \item $\isintable(\tab,\cm,\srs,\subspace;f)$ an interactive public coin protocol between \prv and \ver where \prv has private input $f\in \polysofdeg{\witsize}$, and both parties have access to $\tab,\cm$ and  $\srs=\gen(\tabsize,\tab,d)$.
  such that
  \begin{itemize}
-  \item \textbf{Completeness:}If $\cm=\enc1{f(x)}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
+  \item \textbf{Completeness:} If $\cm=\enc1{f(x)}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
   \item \textbf{Knowledge soundness in the algebraic group model:}
     The probability of any efficient algebraic \adv to win the following game is \negl.
 
@@ -826,7 +826,7 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
 \underline{$\isintable(\tab,\cm,\srs,\subspace;f)$:} \\ \noindent
 \paragraph{\textbf{Round 1:} Committing to the multiplicites vector} \ \\
 \begin{enumerate}
- \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
+ \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
  \item \prv sends $\m\defeq \enc1{m(x)}$.
  \end{enumerate}
 	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree checks for $A,B$ using pairings} \ \\
