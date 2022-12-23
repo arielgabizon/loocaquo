@@ -155,9 +155,10 @@
 \newcommand{\advprime}{\ensuremath{{\mathcal A}'}\xspace}
 \newcommand{\extprime}{\ensuremath{E'}\xspace}
 \newcommand{\advrand}{\ensuremath{\mathsf{rand}_{\adv}}\xspace}
-\num\newcommand{\srs1}{\ensuremath{\mathsf{srs_1}}\xspace}
-\num\newcommand{\srs2}{\ensuremath{\mathsf{srs_2}}\xspace}
-\num\newcommand{\srs0}{\ensuremath{\mathsf{srs}}\xspace}
+% \num\newcommand{\srs1}{\ensuremath{\mathsf{srs_1}}\xspace}
+% \num\newcommand{\srs2}{\ensuremath{\mathsf{srs_2}}\xspace}
+\newcommand{\srs}{\ensuremath{\mathsf{srs}}\xspace}
+\newcommand{\srsbase}{\ensuremath{\mathsf{srs_0}}\xspace}
 \newcommand{\srsi}{\ensuremath{\mathsf{srs_i}}\xspace}
 \newcommand{\com}{\ensuremath{\mathsf{com}}\xspace}
 \newcommand{\comperm}{\ensuremath{\mathsf{com_{\sigma}}}\xspace}
@@ -547,11 +548,43 @@ This protocol is amenable, because polynomials involved have sparsity depending 
 
 - Need way to compute $A$ 
 \section{Preliminaries}
+\subsection{Terminology and Conventions}\label{sec:terminology}
+We assume our field \F is of prime order.
+%We assume we have a
+%multiplicative subgroup $H \subset F$ of size $|H| = n$ where $n$ is the number of constraints in our R1CS.
+%and denote for simplicity the elements of H as H = {1, . . . , m}.
+%We assume the number of private variables n is equal to m.
+We denote by \polysofdeg{d} the set of univariate polynomials over \F of degree smaller than d. 
+We assume all algorithms described receive as an implicit parameter the security parameter $\lambda$.
 
-\subsection{Notation:}
-\subspace - small space
-\bigspace - big space
-Lagrange bases for big and small space
+Whenever we use the term \emph{efficient}, we mean an algorithm running in time \poly. Furthermore,
+we assume an \emph{object generator} \obgen that is run with input $\lambda$ before all protocols, and returns all fields and groups used. Specifically, in our protocol $\obgen(\lambda) = (\F, \G1, \G2, \Gt, e, g_1, g_2,g_t)$ where
+\begin{itemize}
+\item \F is a prime field of super-polynomial size $r = \lambda^{\omega(1)}$
+.
+\item $\G1,\G2,\Gt$ are all groups of size $r$, and $e$ is an efficiently computable non-degenerate pairing
+$e : \G1 \times \G2 \to \Gt$.
+\item $g_1,g_2$ are uniformly chosen generators such that $e(g_1, g_2) = g_t$.
+\end{itemize}
+We usually let the $\lambda$ parameter be implicit, i.e.\ write \F instead of $\F(\lambda)$.
+We write \G1 and \G2 additively. We use the notations $\enc1{x}\defeq x\cdot g_1$ and $\enc2{x}\defeq x\cdot g_2$.
+
+We often denote by $[n]$ the integers \set{1,\ldots,n}.
+% For example, when we refer below to the field $\F$, it is in fact a function $\F(\lambda)$ of $\lambda$, and part of
+% the output of $\obgen(\lambda)$.
+We use the acronym e.w.p for ``except with probability''; i.e. e.w.p $\gamma$ means with probability \emph{at least} $1-\gamma$.
+
+\paragraph{universal SRS-based public-coin protocols}
+We describe public-coin (meaning the verifier messages are uniformly chosen) interactive protocols between a prover and verifier; when deriving results for non-interactive protocols, we implicitly assume we can get a proof length equal to the total communication of the prover, using the Fiat-Shamir transform/a random oracle. Using this reduction between interactive and non-interactive protocols, we can refer to the ``proof length'' of an interactive protocol. 
+
+We allow our protocols to have access to a structured reference string (SRS) that can be derived in deterministic \poly-time from an ``SRS of monomials'' of the form
+\sett{\enc1{x^i}}{a\leq i \leq b}, \sett{\enc2{x^i}}{c\leq i \leq d}, for uniform $x\in \F$,
+and some integers $a,b,c,d$ with absolute value bounded by \poly.
+It then follows from Bowe et al. \cite{SecondMPC} that the required SRS can be derived in a universal and updatable setup requiring only one honest participant; in the sense that an adversary controlling all but one of the participants in the setup does not gain more than a \negl advantage in its probability of producing a proof of any statement.
+
+For notational simplicity, we sometimes use the SRS \srs as an implicit parameter in protocols, and do not explicitly write it.
+
+
 \paragraph{Aurora lemma}
 \begin{lemma}\label{lem:aurora}
  Let $H\subset \F$ be a multiplicative subgroup of size $t$.
@@ -564,7 +597,7 @@ Lagrange bases for big and small space
 \subsection{Idealized verifier checks for algebraic adversaries}\label{subsec:agm}
 We introduce some terminology from \cite{plonk} to capture analysis in the Algebraic Group Model of Fuchsbauer, Kiltz and Loss\cite{AGM}.
 
-First we say our \srs0 \emph{has degree $Q$} if all elements of \srsi are of the form  \enci{f(x)} for $f\in \polysofdeg{Q}$ and uniform $x\in \F$. In the following discussion let us assume we are executing a protocol with a degree $Q$ SRS, and denote by $f_{i,j}$ the corresponding polynomial for the $j$'th element of \srsi.
+First we say our \srs \emph{has degree $Q$} if all elements of \srsi are of the form  \enci{f(x)} for $f\in \polysofdeg{Q}$ and uniform $x\in \F$. In the following discussion let us assume we are executing a protocol with a degree $Q$ SRS, and denote by $f_{i,j}$ the corresponding polynomial for the $j$'th element of \srsi.
 
 Denote by $a,b$ the vectors of $\F$-elements whose encodings in $\G1,\G2$ an algebraic adversary \adv outputs during a protocol execution; e.g., the $j$'th $\G1$ element output by \adv is \enc1{a_j}.
 
@@ -675,8 +708,8 @@ elements of \bigspace.
 We're now ready to state the main theorem of this section.
 
 \begin{thm}
-Fix integer parameters $0\leq n\leq N$ such that $n,N$ are powers of two. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs0=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize]}$ for some $x\in \F$. 
-There is an algorithm \alg that after a preprocessing step of $O(\tabruntime)$ \F- and \G1-operations starting with \srs0 does the following.
+Fix integer parameters $0\leq n\leq N$ such that $n,N$ are powers of two. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize]}$ for some $x\in \F$. 
+There is an algorithm \alg that after a preprocessing step of $O(\tabruntime)$ \F- and \G1-operations starting with \srs does the following.
 
 
 Given input $A(X)\in \polysofdeg{\tabsize}$ that is \witsize-sparse and given in sparse representation, \alg computes in 
@@ -716,11 +749,25 @@ Q(X)=\sum_{i \in  \supp{A}} A_i \cdot Q_i(X) \\
 \section{$\cq\;$ - our main protocol}
 \begin{dfn}\label{dfn:lookupprot}
 
+
+$\gen(\tab,\tabsize,\srsbase=(\enc1{x^i},\enc2{x^i})_{i\in [0,\ldots,d})$:
+\begin{enumerate}
+ \item Compute for $i\in [\tabsize]$:
+ \begin{enumerate}
+  \item $q_i=\enc1{Q_i(x)}$ such that
+  \[L_i(X)\cdot T(X)=T_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X).\]
+  \item $\enc1{L_i(x)},\enc1{x^{d-\tabsize}L_i(x)},\enc1{x^{d-\witsize}}$
+  \item $\enc1{\frac{L_i(x)-L_i(0)}{x}}$.
+ \end{enumerate}
+
+\end{enumerate}
+
+
 Tuple \gen,\isintable
 \begin{itemize}
- \item $\gen(\tab,\tabsize)\to \srs0$
+ \item $\gen(\tab,\tabsize,\srsbase)\to \srs$
  \item $\isintable$ an interactive public coin protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has \enc1{f(x)}.
- Both have \tab and \srs0.
+ Both have \tab and \srs.
  such that
  \begin{itemize}
   \item Completeness:If $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
@@ -728,7 +775,9 @@ Tuple \gen,\isintable
    For any $\tab\in\F^\witsize$, the probability of any algebraic \adv to win the following game is \negl
 
 \begin{enumerate}
- \item Let $\srs0=\gen(\tab,\tabsize)$.
+\item We generate for uniform $x\in \F$, $\srs0=(\enc1{x^i},\enc2{x^i})_{i\in [0,\ldots,d}$.
+\item \adv chooses  $\tab\in \F^\tabsize$.
+ \item We compute $\srs=\gen(\tab,\tabsize,\srs0)$.
  \item \adv sends a message \cm and values $f_1,\ldots, f_\witsize$ such that $\cm=\sumi{\witsize}f_i\cdot \enc1{L_i(x)}$.
  \item \adv and \ver engage in the protocol $\isintable(\tab,\cm)$ with \adv taking the role of \prv.
  \item \adv wins if 
@@ -862,6 +911,9 @@ In summary, we have shown the event that \ver outputs \acc while $\restricttoset
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
 
 \section{\cqstar}
+The only point where \prv does $O(\witruntime)$ operations in \cq is using FFT's to compute $Q_B(X)$. Similarly to what we did with $Q_A(X)$ we could 
+try to only compute the commitment \enc1{Q_B(x)}
+$\gen(\tab,\srs)$
 
 Main protocol:
 Preprocessed inputs:
