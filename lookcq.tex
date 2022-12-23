@@ -474,8 +474,6 @@
  \begin{enumerate}
   \item As in \cite{caulk,caulkp,baloo} our construction relies on homomorphic table commitments, which makes them amenable to vector lookups in the manner described in Section 4 of \cite{plookup}.
  \item As opposed to \cite{caulk,caulkp,flookup,baloo} the \cq verifier doesn't involve pairings with prover defined \G2 points, which makes recursive aggregation of proofs more convenient.
- 
-\item The construction can be altered to a version we call \cqstar that loses the mentioned aggregatability, increase preprocessing time to $O(\witsize\cdot \tabsize)$, and in return reduce prover complexity to a \emph{linear} number of field and group operations!
  \end{enumerate}
  \end{abstract}
 
@@ -935,7 +933,7 @@ $B(\hgen^i)=\frac{1}{f(\hgen^i)+\beta}$.
 \[\witsize\cdot b_0 = \sum_{i\in [\witsize]} B(\hgen^i) = \sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+\beta}\]
 Thus e.w.p. $(\witsize\cdot \tabsize)/|\F|$ over $\beta\in \F$, we have that
 \[\sum_{i\in [\tabsize]}\frac{m_i}{T_i+X)}=\sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+X},\]
-which implies $\restricttoset{f}{\subspace}\in \tab$.
+which implies $\restricttoset{f}{\subspace}\subset \tab$.
 \end{itemize}
 In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
