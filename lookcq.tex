@@ -523,7 +523,7 @@ this work  6 G1, 1 G2
 We explain our protocol in the context of the line of work starting from \cite{caulk}.
 \paragraph{The innovation of \caulk}
 To restate the problem, we have an input polynomial $f(X)$,  a table \tab of size \tabsize encoded in the values of 
-a polynomial $T(X)\in \polysofdeg{\tabsize}$, and wish to show $\restricttoset{f}{\subspace}\subset \tab$, where $|\subspace=\witsize << \tabsize$.
+a polynomial $T(X)\in \polysofdeg{\tabsize}$, and wish to show $\restricttoset{f}{\subspace}\subset \tab$, where $|\subspace|=\witsize << \tabsize$.
 We want our prover \prv to perform a number of operations \emph{sublinear} in \tabsize, or ideally, a number of operations depending only on \witsize. 
 One natural approach - is to send  the verifier \ver, a polynomial $T'$ encoding 
 the \emph{\witsize values from \tab actually used in $f$}, and then run a lookup protocol using $T'$.
@@ -531,8 +531,8 @@ The challenging problem is to prove \emph{$T'$ actually encodes values from $T$}
 Speaking impercisely, the ``witness'' to $T'$ correctness is a quotient $Q$ of degree $\tabsize-\witsize$.
 It would defeat our purpose to actually compute $Q$ - as that would require $O(\tabsize)$ operations.
 
-The central innovation of \caulk\cite{caulk} is the following observation:If we precompute commitments to certain polynomials, we can compute in a number of operations depending only on \witsize, the \emph{commitment} to $Q$.
-Moreover, having only a commitment to $Q$ suffices to check, via a pairing between $T'$ and $Q$'s commitments, that $T'$ is valid.
+The central innovation of \caulk\cite{caulk} is the following observation: If we precompute commitments to certain polynomials, we can compute in a number of operations depending only on \witsize, the \emph{commitment} to $Q$.
+Moreover, having only a commitment to $Q$ suffices to check, via pairings, that $T'$ is valid.
 
 
 
@@ -543,7 +543,7 @@ However, it has the following disadvantage:
 on arbitrary sets, rather than just subgroups. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we are used to from FFT's on subgroups.
 
 Moreover, when desiring to work with a \emph{homomorphic} table commitment, the \caulk approach requires working
-with a $T'$ that encodes the subtable values on a ``hidden'' prover defined set of inputs; requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
+with a $T'$ that encodes the subtable values on a ``hidden'', prover-defined set of inputs; consequently requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
 \paragraph{Our approach}
 The key difference between \cq and \cite{caulk,caulkp,flookup,baloo} is that we use the idea of succinct computation
 of quotient commitments, not to extract a subtable, but to directly run an exisiting lookup protocol on a large table,  in time depending only on \witsize.
