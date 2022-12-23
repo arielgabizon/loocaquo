@@ -106,7 +106,7 @@
 %\newcommand{\authorname}}
 \newcommand{\company}{}
 \title{ \bf \papertitle \\[0.72cm]}
-\author{ Liam Eagen \and  Dario Fiore \\ \tt{IMDEA}  \and Ariel Gabizon \\ \tt{Zeta Function Technologies} } 
+\author{ Liam Eagen \\ \tt{Blockstream} \and  Dario Fiore \\ \tt{IMDEA software institute}  \and Ariel Gabizon \\ \tt{Zeta Function Technologies} } 
 % 
 % 	\large{\authorname} \\[0.5cm] \large{\company}
 % 	\\ {DRAFT}
@@ -415,7 +415,7 @@
 \newcommand{\isinvanishing}[1]{\ensuremath{\mathsf{IsInVanishing_{\subspace,#1}}}\xspace}
 \newcommand{\batchedisinvanishing}[1]{\ensuremath{\mathsf{BatchedIsInVanishing_{\subspace,#1}}}\xspace}
 \newcommand{\isconsistent}{\ensuremath{\mathsf{IsConsistent}}\xspace}
-\newcommand{\isintable}{\ensuremath{\mathsf{IsInTable_{\subspace}}}\xspace}
+\newcommand{\isintable}{\ensuremath{\mathsf{IsInTable}}\xspace}
 \newcommand{\isinvanishingtable}[1]{\ensuremath{\mathsf{IsInVanishingTable_{\subspace,#1}}}\xspace}
 \newcommand{\isvanishingsubtable}[1]{\ensuremath{\mathsf{IsVanishingSubtable_{#1}}}\xspace}
 \newcommand{\haslowerdegree}{\ensuremath{\mathsf{HasLowerDegree}}\xspace}
@@ -772,26 +772,25 @@ Q(X)=\sum_{i \in  \supp{A}} A_i \cdot Q_i(X) \\
 
 
 \section{$\cq\;$ - our main protocol}
-We give a natural definition of a lookup protocol for algerbic adversaries.
+Before describing our protocol, we give a definition of a lookup protocol secure against algerbic adversaries.
 \begin{dfn}\label{dfn:lookupprot}
 A lookup protocol as a tuple $(\gen,\isintable)$ such that
 \begin{itemize}
- \item $\gen$: is a randomized algorithm receiving as input parameters $\tabsize,\witsize,\tab\in \F^\tabsize,d$ for $d\geq \tabsize$.
+ \item $\gen(\tabsize,\tab,d)$ is a randomized algorithm receiving as input parameters $\tabsize,\tab\in \F^\tabsize,d$ for $d\geq \tabsize$\footnote{The somewhat awkward $d$ parameter's purpose is to enforce security also when starting with an \srs of higher degree than \tabsize.}.
  Given these inputs \gen outputs a string \srs such that all elements of \srs are linear combinations of \sett{\enc1{x^i}}{i\in[0,\ldots,d]} or
  of \sett{\enc2{x^i}}{i\in[0,\ldots,d]}.
- \item $\isintable$ an interactive public coin protocol between \prv and \ver where \prv has input $f\in \polysofdeg{\witsize}$, \ver has input $\cm$.
- Both \prv and \ver have $\witsize,\tab$ and $\srs=\gen(\tabsize,\witsize,\tab,d)$.
+ \item $\isintable(\tab,\cm,\srs,\subspace;f)$ an interactive public coin protocol between \prv and \ver where \prv has private input $f\in \polysofdeg{\witsize}$, and both parties have access to $\tab,\cm$ and  $\srs=\gen(\tabsize,\tab,d)$.
  such that
  \begin{itemize}
-  \item Completeness:If $\cm=\enc1{f}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
-  \item Knowledge soundness in the algebraic group model:
-    The probability of any algebraic \adv to win the following game is \negl
+  \item \textbf{Completeness:}If $\cm=\enc1{f(x)}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
+  \item \textbf{Knowledge soundness in the algebraic group model:}
+    The probability of any efficient algebraic \adv to win the following game is \negl.
 
 \begin{enumerate}
-\item \adv chooses  $\tabsize,\witsize,\tab\in \F^\tabsize$.
+\item \adv chooses integer parameters $\tabsize,\witsize$ and a table $\tab\in \F^\tabsize$.
  \item We compute $\srs=\gen(\tab,\tabsize,\witsize)$.
  \item \adv sends a message \cm and $f\in\polysofdeg{d}$ such that $\cm=\enc1{f(x)}$.
- \item \adv and \ver engage in the protocol $\isintable(\tab,\cm)$ with \adv taking the role of \prv.
+ \item \adv and \ver engage in the protocol $\isintable(\tab,\cm,\srs,\subspace)$ with \adv taking the role of \prv.
  \item \adv wins if 
  \begin{itemize}
   \item \ver outputs \acc, and
@@ -802,10 +801,11 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
 \end{itemize}
 \end{itemize}
 \end{dfn}
-Main protocol:
-$\gen(\tab,\tabsize,\witsize)$:
+\subsection{The \cq protocol}
+
+\underline{$\gen(\tab,\tabsize,\witsize,d)$:}\\ \noindent
 \begin{enumerate}
-\item Choose random $x\in \F$ compute and outputs \sett{\enc1{x^i},\enc2{x^i}}{i\in \set{0,\ldots,\tabsize}}
+\item Choose random $x\in \F$ compute and outputs \sett{\enc1{x^i},\enc2{x^i}}{i\in \set{0,\ldots,d}}
 \item Output \enc2{Z_\bigspace(x)}.
 \item Compute $T(X)=\sumi{\tabsize}\tab_i L_i(X)$. Compute and output \enc2{T(x)}.
  \item Compute for $i\in [\tabsize]$ compute and output:
@@ -817,10 +817,14 @@ $\gen(\tab,\tabsize,\witsize)$:
  \end{enumerate}
 
 \end{enumerate}
-Preprocessed inputs:
-\enc2{Z_\bigspace(x)}, \enc2{T(x)}
-Input $(\cm,f)$.
-	\paragraph{\textbf{Round 1:} Committing to the multiplicites vector} \ \\
+
+\noindent
+\\
+\\
+\\
+\noindent
+\underline{$\isintable(\tab,\cm,\srs,\subspace;f)$:} \\ \noindent
+\paragraph{\textbf{Round 1:} Committing to the multiplicites vector} \ \\
 \begin{enumerate}
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
  \item \prv sends $\m\defeq \enc1{m(x)}$.
