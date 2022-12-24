@@ -481,14 +481,14 @@
 
 \section{Introduction}
 The \emph{lookup problem} is fundamental to the efficiency of modern zk-SNARKs.
-Somewhat informally, it asks for a protocol to prove the values of a committed polynomial $\phi(X)\in\polysofdeg{\witsize}$ are contained in a table $T$ of size $\tabsize$ of predefined legal values.
+Somewhat informally, it asks for a protocol to prove the values of a committed polynomial $f(X)\in\polysofdeg{\witsize}$ are contained in a table $T$ of size $\tabsize$ of predefined legal values.
 When the table $T$ corresponds to an operation without an efficient low-degree arithmetization in $\F$, such a protocol produces significant savings in proof construction time for programs containing the operation.
 Building on previous work of \cite{arya}, \plookup \cite{plookup} was the first to explicitly describe a solution to this problem in the polynomial-IOP context. \plookup described a protocol with prover complexity quasilinear in both \witsize and \tabsize.
 This left the intriguing question of whether the dependence on \tabsize could be made \emph{sublinear} after performing a preprocessing step for the table $T$.
 \caulk \cite{caulk} answered this question in the affirmative by leveraging bi-linear pairings, achieving a run time of $O(\witsize^2+\witsize\log \tabsize)$. \caulkp \cite{caulkp} improved this to $O(\witsize^2)$ getting rid of the dependence on table size completely.\footnote{A nuance is that while the \emph{number} of field and group operations are independent of table size, the field and group must be larger than the table in all these constructions, including this paper.} 
 
 Naturally, the quadratic dependence on \witsize  of these works made them impractical for a circuit with many lookup gates. This was resolved in two more recent protocols - \baloo\cite{baloo} and \flookup\cite{flookup} achieving a runtime of $O(\witsize\log^2\witsize)$.
-While \flookup has better concrete constants, \baloo preserved an attractive feature of \caulk\space  - using a \emph{homomorphic commitment} to the table. In the sense that given commitments $\cm_1,\cm_2$ to tables $T_1,T_2$ with elements \set{a_i},\set{b_i} respectively;
+While \flookup has better concrete constants, \baloo preserved an attractive feature of \caulk\space  - using a \emph{homomorphic commitment} to the table. This means that given commitments $\cm_1,\cm_2$ to tables $T_1,T_2$ with elements \set{a_i},\set{b_i} respectively;
 we can check membership in the set of elements $\set{a_i+\alpha b_i}$ by running the protocol with $\cm\defeq \cm_1+\alpha\cdot \cm_2$ as the table commitment. This is crucial for vector lookups that have become popular in zk-SNARKs, as described in Section 4 of \cite{plookup}.
 
 One drawback of all for recent constructions - \caulk,\caulkp,\baloo,\flookup; is that they require the verifier perform a pairing where both \G1 and \G2 pairing arguments are not fixed in the protocol, but prover defined. This makes it harder to recrusively aggregate multiple proofs via random combination, in the style described e.g. in Section 8 of \cite{bcms}.
@@ -500,11 +500,11 @@ In this paper, we present a protocol called \cq\space  - short for ``cached quot
 \begin{enumerate}
  \item Improves asymptotic prover performance in field operations from $O(\witsize\log^2\witsize)$ to $O(\witsize\log\witsize)$.
  \item Achieves small constants in proof size and group operations, \emph{while preserving homomorphicity} as in \caulk,\caulkp and \baloo.
- \item Achieves for the first time in this line of work convenient aggregatability by having all verifier contain fixed protocol defined \G2 arguments.
+ \item Achieves for the first time in this line of work convenient aggregatability by having all verifier pairings use fixed protocol-defined \G2 arguments.
 \end{enumerate}
 
 \begin{table}[!htbp]
-	\caption{Scheme comparison. $\witsize$ = witness size, \tabsize = Table size, ``Aggregatable''= All prover defined pairing arguments in \G1}
+	\caption{Scheme comparison. $\witsize$ = witness size, \tabsize = Table size, ``Aggregatable''= All prover defined pairing arguments are in \G1}
 	\centering
 \begin{adjustbox}{width=1\textwidth}
 	\begin{tabular}{l|l|l|l|l|l|l}
@@ -529,14 +529,14 @@ To restate the problem, we have an input polynomial $f(X)$,  a table \tab of siz
 a polynomial $T(X)\in \polysofdeg{\tabsize}$ on a subgroup \bigspace of size \tabsize. We want to show $f$'s values on a subgroup \subspace of size \witsize are contained in \tab; concisely that $\restricttoset{f}{\subspace}\subset \tab$. We think of the parameters as $\witsize<<\tabsize$.
 We want our prover \prv to perform a number of operations \emph{sublinear} in \tabsize, or ideally, a number of operations depending only on \witsize. 
 
-One natural approach - is to send  the verifier \ver, a polynomial $T'$ encoding 
-the \emph{\witsize values from \tab actually used in $f$}, and then run a lookup protocol using $T'$.
-The challenging problem is to prove \emph{$T'$ actually encodes values from $T$}.
-Speaking impercisely, the ``witness'' to $T'$ correctness is a quotient $Q$ of degree $\tabsize-\witsize$.
+One natural approach - is to send  the verifier \ver a polynomial $T_f$ encoding 
+the \emph{\witsize values from \tab actually used in $f$}, and then run a lookup protocol using $T_f$.
+The challenging problem is then to prove \emph{$T_f$ actually encodes values from $T$}.
+Speaking impercisely, the ``witness'' to $T_f$'s correctness is a quotient $Q$ of degree $\tabsize-\witsize$.
 It would defeat our purpose to actually compute $Q$ - as that would require $O(\tabsize)$ operations.
 
-The central innovation of \caulk\cite{caulk} is the following observation: If we precompute commitments to certain polynomials, we can compute in a number of operations depending only on \witsize, the \emph{commitment} to $Q$.
-Moreover, having only a commitment to $Q$ suffices to check, via pairings, that $T'$ is valid.
+The central innovation of \caulk\cite{caulk} is the following observation: If we precompute commitments to certain quotient polynomials, we can compute in a number of operations depending only on \witsize, the \emph{commitment} to $Q$.
+Moreover, having only a commitment to $Q$ suffices to check, via pairings, that $T_f$ is valid.
 
 
 
@@ -545,47 +545,47 @@ This approach was a big step forward, enabling for the first time lookups sublin
 However, it has the following disadvantage:
 ``Extracting'' the subtable of values used in $f$, is analogous to looking at restrictions of the original table polynomial to arbitrary sets - far
 from the nice subgroups we are used to in zk-SNARK world. Very roughly speaking, this is why all previous four works end up needing to 
-work with interpolation and evaluation of polynomials on arbitrary sets, rather than just subgroups. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we get for FFTs and IFFTs on subgroups.
+work with interpolation and evaluation of polynomials on arbitrary sets, rather than just subgroups. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we get for subgroups (of order $2^k$ for example).
 
 % Moreover, when desiring to work with a \emph{homomorphic} table commitment, the \caulk approach requires working
 % with a $T'$ that encodes the subtable values on a ``hidden'', prover-defined set of inputs; consequently requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
 \paragraph{Our approach}
 The key difference between \cite{caulk,caulkp,flookup,baloo} and \cq is that we use the idea of succinct computation
 of quotient commitments, not to extract a subtable, \emph{but to directly run an exisiting lookup protocol on the original large table more efficiently}.
-Specifically, we use as our starting point the ``logarithmic derivative based lookup'' of \cite{mvlookup}.
+Specifically, we use as our starting point the ``logarithmic derivative based lookup'' of \cite{bplusplus,mvlookup}.
 
-\cite{mvlookup} utilizes the following lemma (cf. Lemma \ref{lem:mvlookup}):
+\cite{mvlookup} utilizes the following lemma (cf. Lemma \ref{lem:mvlookup} or Lemma 5 in \cite{mvlookup}):
 $\restricttoset{f}{\subspace}\subset \tab$ if and only if for some $m\in \F^\tabsize$
  \[\sumi{\tabsize}\frac{m_i}{X+\tab_i}=\sumi{\witsize}\frac{1}{X+f_i},\]
  as rational functions.
 \cite{mvlookup} checks this identity on a random $\beta$,
-by sending commitment to polynomials $A$ and $B$ whose values correspond to the summands of the LHS and RHS
+by sending commitment to polynomials $A$ and $B$ whose values correspond to the summands evaluated at $\beta$ of the LHS and RHS
 respectively.
 Given commitments to $A,B$, we can check the above equality holds via various sumcheck techniques, e.g. that described in \cite{aurora} (cf. Lemma \ref{lem:aurora}).
 The RHS is not a problem because it is a sum of size \witsize.
 Computing $A$'s commitment is actually not a problem either, because the number of its non-zero values on \bigspace
-is at most \witsize. So we precompute the commitments to the Lagrange base of  \bigspace, we can compute $A$'s commitment in  \witsize group operations.
+is at most \witsize. So when precomputing the commitments to the Lagrange base of  \bigspace, we can compute $A$'s commitment in  \witsize group operations.
 
-The main challenge, and innovation, is to convince the verifier \ver that $A$ is correctly formed.
+The main challenge is to convince the verifier \ver that $A$ is correctly formed.
 This is equivalent to the existence of a quotient polynomial $Q_A(X)$ such that
 \[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X).\]
 
+It can be seen that this is the same $Q_A(X)$ as when writing
+\[A(X)T(X)=Q_A(X)Z_\bigspace(X) +R(X),\]
+for $R(X)\in\polysofdeg{\tabsize}$.
 
-Here is where are central innovation, and the term ``cached quotients'' come from. We observe that while computing 
-$Q_A$ would take too long, we can compute the commitment to $Q_A$ in $O(\witsize)$ operations as follows.
-We precompute for each $L_i(X)$ in the Lagrange basis of \bigspace its quotient commitments when multiplying with $T(X)$, i.e.
-the commitment to $Q_i(X)$ such that for some $R(X)\in \polysofdeg{\tabsize}$.
+Here is where our central innovation, and the term ``cached quotients'' come from. We observe that while computing 
+$Q_A$ would take too long, we can compute the commitment \enc1{Q_A(x)} to $Q_A$ in $O(\witsize)$ operations as follows.
+We precompute for each $L_i(X)$ in the Lagrange basis of \bigspace its quotient commitment when multiplying with $T(X)$, i.e.
+the commitment to $Q_i(X)$ such that for some remainder $R_i(X)\in \polysofdeg{\tabsize}$.
 
-\[L_i(X)T(X)= Q_i(X)\cdot Z_\bigspace(X) + R(X).\]
+\[L_i(X)T(X)= Q_i(X)\cdot Z_\bigspace(X) + R_i(X).\]
 
-Given the commitments to \enc1{Q_i(x)} \enc1{Q_A(x)} can be computed in $O(\witsize)$ \G1 operations.
+Given the commitments \enc1{Q_i(x)}, \enc1{Q_A(x)} can be computed in $O(\witsize)$ \G1-operations via linear combination.
+Moreover, all the elements \enc1{Q_i(x)} can be computed in an $O(\tabruntime)$ preprocessing phase leveraging the work of Feist and Khovratovich\cite{fastkzgproofsorig}. See Section \ref{sec:cachedquo} for details on this.
 \section{Preliminaries}
 \subsection{Terminology and Conventions}\label{sec:terminology}
 We assume our field \F is of prime order.
-%We assume we have a
-%multiplicative subgroup $H \subset F$ of size $|H| = n$ where $n$ is the number of constraints in our R1CS.
-%and denote for simplicity the elements of H as H = {1, . . . , m}.
-%We assume the number of private variables n is equal to m.
 We denote by \polysofdeg{d} the set of univariate polynomials over \F of degree smaller than d. 
 We assume all algorithms described receive as an implicit parameter the security parameter $\lambda$.
 
@@ -680,7 +680,7 @@ We crucially use the following lemma from \cite{mvlookup}.
  \[\sumi{\witsize}\frac{1}{X+f_i}=\sumi{\tabsize}\frac{m_i}{X+t_i}.\]
 \end{lemma}
 
-\section{Cached quotients}
+\section{Cached quotients}\label{sec:cachedquo}
 
 
 \paragraph{Notation:}
@@ -829,7 +829,7 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 \\
 \\
 \noindent
-\underline{$\isintable(\tab,\cm,\srs,\subspace;f)$:} \\ \noindent
+\underline{$\isintable(\cm,\tab,\srs,\subspace;f)$:} \\ \noindent
 \paragraph{\textbf{Round 1:} Committing to the multiplicites vector} \ \\
 \begin{enumerate}
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
@@ -887,23 +887,26 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 
 \end{enumerate}
 
-\paragraph{Stats:}
+Note that although the above description contains nine pairings, we can reduce to four pairings checks via the standard technqiue of randomly batching
+pairings that share one of their arguments.
+                     
+                  
+    The  main things to address are the efficiency of the \gen algorithm used for preprocessing, the efficiency of \prv in \isintable, and knowledge soundness of the protocol.
+    
+    \paragraph{Runtime of \gen}
+We claim that \gen requires $O(\tabruntime)$ \G1 and \F operations and $O(\tabsize)$ \G2 operations.
+The claim regarding the \G2 operations is obvious.
+The elements \set{q_i} can be computing in $O(\tabruntime)$ operations according to Lemma \ref{lem:cq-compute}.
+The elements \set{\enc1{L_i(x)}} can be computed in $O(\tabruntime)$ via FFT as explained in Section 3 of \cite{FirstMPC}.
+Given the element \enc1{L_i(x)}, the element \enc1{\frac{L_i(x)-L_i(0)}{x}} can be computed as
+\[\frac{L_i(x)-L_i(0)}{x}=\]
 
-verifier pairings:5 - pair \a with random combination of $T$ and \enc2{x^{d-\tabsize}}, pair \qa with $Z_\bigspace$.
-pair \b with \enc2{d-\witsize} for degree check.
-Proof size - 8 \G1 - \a,\b,\p,\m,\qa,\qb\gamproof,\zerproof    
-                     4 \F- \bgam,\qbgam,\fgam,$a_0$
-                     
-                     
-                     
-    Note that we can split \p to two proofs and that reduces a verifier pairing
-
-\begin{lemma}\label{lem:computeQA}
-The element $q_A$ in Step \ref{step:computeQA} can be computed in  \witruntime \G2-operations and $O(\witruntime)$ \F-operations
-\end{lemma}
-\begin{lemma}\label{lem:computeKZGproofs}
-The elements $\zerproof,\gamproof$ can be computed in  $2\cdot\witruntime$ \G1-operations and $O(\witruntime)$ \F-operations
-\end{lemma}
+\paragraph{Runtime of \prv}
+The main things to address are the computation of \qa; that can be done in \witsize \G1 operations given \srs according to Theorem \ref{thm:sec3main}.
+The only step requiring $O(\witruntime)$ \F operations is the computation the quotient $Q_B(X)$ which involves FFT on \subspace.
+We also note that the commitment \enc1{\frac{A(x)-A(0)}{x}} required for computing \zerproof, can be computed in \witsize \G1 operations
+as the linear combination 
+\[\enc1{\frac{A(x)-A(0)}{x}} =\sum_{i\in \supp{A}}A_i\cdot \enc1{\frac{L_i(x)-L_i(0)}{x}} . \]
 
 \paragraph{Knowledge soundness proof:}
 Let \adv be an efficient algebraic adversary participating in the Knowledge Soundness game from
