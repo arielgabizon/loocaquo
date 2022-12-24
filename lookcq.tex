@@ -622,7 +622,7 @@ Our sumcheck relies on the following lemma originally used in the Aurora constru
 \begin{lemma}\label{lem:aurora}
  Let $H\subset \F$ be a multiplicative subgroup of size $t$.
  For $f\in\polysofdeg{t}$, we have 
-\[\sum_{a\in H}f(a) = n\cdot f(0).\]
+\[\sum_{a\in H}f(a) = t\cdot f(0).\]
 \end{lemma}
 
 
@@ -694,12 +694,14 @@ For a polynomial $A(X)\in \polysofdeg{\tabsize}$, we say it is \emph{\witsize-sp
 The \emph{sparse representation} of such $A$ consists of the (at most) \witsize pairs $(i,A_i)$ such that $A_i\neq 0$.
 We denote $\supp{A}\defeq\set{i\in [\tabsize]| A_i\neq 0}$.\\
 
+The main result of this section is a method to compute a commitment to a quotient polynomial - derived from a product with a preprocessed polynomial; in a number of operations depending only on the sparsity of the other polynomial in the product. 
+
 The result crucially relies on the following lemma based on a result of Feist and Khovratovich\cite{fastkzgproofsorig}.
 
 \begin{lemma}
 \label{lem:cq-compute}
 Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. 
-There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize}}$ computes for $i\in [\tabsize]$, the elements 
+There is an algorithm that given the \G1 elements $\sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize-1}}$ computes for $i\in [\tabsize]$, the elements 
 $q_i\defeq \enc1{Q_i(x)}$
 where $Q_i(X)\in \F[X]$ is such that
 \[L_i(X)\cdot T(X)=T_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X)\]
@@ -739,9 +741,8 @@ elements of \bigspace.
 \end{proof}
 
 
-The main result of this section is a method to compute a commitment to a quotient polynomial - derived from a product with a preprocessed polynomial; in a number of operations depending only on the sparsity of the other polynomial in the product. 
 \begin{thm}\label{thm:sec3main}
-Fix integer parameters $0\leq n\leq N$ such that $n,N$ are powers of two. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize]}$ for some $x\in \F$. 
+Fix integer parameters $0\leq n\leq N$ such that $n,N$ are powers of two. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize-1]}$ for some $x\in \F$. 
 There is an algorithm \alg that after a preprocessing step of $O(\tabruntime)$ \F- and \G1-operations starting with \srs does the following.
 
 
@@ -783,8 +784,8 @@ Before describing our protocol, we give a definition of a lookup protocol secure
 \begin{dfn}\label{dfn:lookupprot}
 A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 \begin{itemize}
- \item $\gen(\tabsize,\tab)$ is a randomized algorithm receiving as input parameters $\tabsize,\tab\in \F^\tabsize$. 
- Given these inputs \gen outputs a string \srs.
+ \item $\gen(\tabsize,\tab)$ is a randomized algorithm receiving as input parameters integer $\tabsize$ and $\tab\in \F^\tabsize$. 
+ Given these inputs \gen outputs a string \srs of \G1 and \G2 elements.
  \item $\isintable(\cm,\tab,\srs,\subspace;f)$ is an interactive public coin protocol between \prv and \ver where \prv has private input $f\in \polysofdeg{\witsize}$, and both parties have access to $\tab,\cm$ and  $\srs=\gen(\tabsize,\tab)$.
  such that
  \begin{itemize}
@@ -795,7 +796,8 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 \begin{enumerate}
 \item \adv chooses integer parameters $\tabsize,\witsize$ and a table $\tab\in \F^\tabsize$.
  \item We compute $\srs=\gen(\tab,\tabsize,\witsize)$.
- \item \adv sends a message \cm and $f\in\polysofdeg{\tabsize}$ such that $\cm=\enc1{f(x)}$.
+ \item \adv sends a message \cm and $f\in\polysofdeg{d}$ such that $\cm=\enc1{f(x)}$ where $d$ is such that all \G1 elements in \srs are linear
+ combinations of \sett{\enc1{x^i}}{i\in \set{0,\ldots,d-1}}.
  \item \adv and \ver engage in the protocol $\isintable(\tab,\cm,\srs,\subspace)$ with \adv taking the role of \prv.
  \item \adv wins if 
  \begin{itemize}
@@ -887,24 +889,24 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 
 \end{enumerate}
 
-Note that although the above description contains nine pairings, we can reduce to four pairings checks via the standard technqiue of randomly batching
+Note that although the above description contains nine pairings, we can reduce to four pairings via the standard technqiue of randomly batching
 pairings that share one of their arguments.
                      
                   
-    The  main things to address are the efficiency of the \gen algorithm used for preprocessing, the efficiency of \prv in \isintable, and knowledge soundness of the protocol.
+    The  main things to address are the efficiency of the \gen algorithm used for preprocessing, the efficiency of \prv in \isintable, and the knowledge soundness of \isintable.
     
-    \paragraph{Runtime of \gen}
+    \paragraph{Runtime of \gen:}
 We claim that \gen requires $O(\tabruntime)$ \G1 and \F operations and $O(\tabsize)$ \G2 operations.
 The claim regarding the \G2 operations is obvious.
 The elements \set{q_i} can be computing in $O(\tabruntime)$ operations according to Lemma \ref{lem:cq-compute}.
 The elements \set{\enc1{L_i(x)}} can be computed in $O(\tabruntime)$ via FFT as explained in Section 3 of \cite{FirstMPC}.
 Given the element \enc1{L_i(x)}, the element \enc1{\frac{L_i(x)-L_i(0)}{x}} can be computed as
-\[\frac{L_i(x)-L_i(0)}{x}=\]
+\[\enc1{\frac{L_i(x)-L_i(0)}{x}}=\vgen^{-i}\cdot \enc1{L_i(x)}- (1/\tabsize)\cdot \enc1{x^{\tabsize-1}}.\]
 
-\paragraph{Runtime of \prv}
+\paragraph{Runtime of \prv:}
 The main things to address are the computation of \qa; that can be done in \witsize \G1 operations given \srs according to Theorem \ref{thm:sec3main}.
 The only step requiring $O(\witruntime)$ \F operations is the computation the quotient $Q_B(X)$ which involves FFT on \subspace.
-We also note that the commitment \enc1{\frac{A(x)-A(0)}{x}} required for computing \zerproof, can be computed in \witsize \G1 operations
+We also note that the commitment \enc1{\frac{A(x)-A(0)}{x}} required for computing \zerproof, can be computed in \witsize \G1-operations
 as the linear combination 
 \[\enc1{\frac{A(x)-A(0)}{x}} =\sum_{i\in \supp{A}}A_i\cdot \enc1{\frac{L_i(x)-L_i(0)}{x}} . \]
 
@@ -914,15 +916,13 @@ Definition \ref{dfn:lookupprot}.
 We show its probability of winning the game is \negl.
 Let $f\in \polysofdeg{d}$ be the polynomial sent by \adv in the first step of the game
 such that $\cm=\enc1{f(x)}$.
-As \adv is algebraic, when sending the commitments \m,\a,\b,\p,\qa,\qb,\gamproof,\zerproof during protocol execution it also sends polynomials $m(X),A(X),B(X),P(X),Q_A(X),Q_B(X),h(X),h_0(X)\in \polysofdeg{d}$ such that the former are their corresponding commitments.
-Let $E$ be the event \ver outputs \acc.
-Note that the event that \adv wins the game is contained in $E$. 
-$E$ implies all pairing checks passed.
-Let $A\subset E$ be the event that one of the corresponding ideal pairing checks didn't pass.
+As \adv is algebraic, when sending the commitments \m,\a,\b,\p,\qa,\qb,\gamproof,\zerproof during protocol execution it also sends polynomials $m(X),A(X),B(X),$ $P(X),Q_A(X),Q_B(X),h(X),h_0(X)\in \polysofdeg{d}$ such that the former are their corresponding commitments.
+Let $E$ be the event that \ver outputs \acc.
+Note that the event that \adv wins the knowledge soundness game is contained in $E$. 
+$E$ implies all pairing checks have passed.
+Let $A\subset E$ be the event that one of the corresponding ideal pairing checks as defined in Section \ref{subsec:agm} didn't pass.
 According to Lemma \ref{lem:AGManalysis}, $\prob(A=\negl)$.
-% We'll show that the event that \adv wins is contained in $E`$.
-% Let $E_1=E\setminus E`$.
-Given $A$ didn't occur, we have
+Given that $A$ didn't occur, we have
 \begin{itemize}
  \item From step \ref{step:checkqa} \[A(X)(T(X)+\beta)-M(X) = Q_A(X)\cdot Z_\bigspace(X)\]
 Which means that for all $i\in [\tabsize]$,
@@ -933,19 +933,19 @@ Which means that for all $i\in [\tabsize]$,
 which implies  that  $\deg(B)<\witsize$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
 point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing.}
 
-\item From the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an expalantion of the correctness of batched KZG \cite{kate}). 
+\item From the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an expalantion of batched KZG \cite{kate}), we have  
 $\bgam = B(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0),b_0=B(0)$.
 
 \item Which implies by how \qbgam is set in step \ref{step:setQB}  that e.w.p. $(\tabsize+ \witsize)/|\F|$ over $\gamma$ 
 \[B(X)\cdot (f(X)+\beta)=1+ Q_B(X)Z_\subspace(X),\]
 which implies for all $i\in [\witsize]$ that
 $B(\hgen^i)=\frac{1}{f(\hgen^i)+\beta}$.
-\item We know have using Lemma \ref{lem:aurora} that
-\[\tabsize\cdot a_0 = \sum_{i\in [\tabsize]} A_i = \sum_{i\in [\tabsize]}\frac{m_i}{T_i+\beta)}\]
-\[\witsize\cdot b_0 = \sum_{i\in [\witsize]} B(\hgen^i) = \sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+\beta}\]
+\item We now have using Lemma \ref{lem:aurora} that
+\[\tabsize\cdot a_0 = \sum_{i\in [\tabsize]} A_i = \sum_{i\in [\tabsize]}\frac{m_i}{T_i+\beta)},\]
+\[\witsize\cdot b_0 = \sum_{i\in [\witsize]} B(\hgen^i) = \sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+\beta}.\]
 Thus e.w.p. $(\witsize\cdot \tabsize)/|\F|$ over $\beta\in \F$, we have that
-\[\sum_{i\in [\tabsize]}\frac{m_i}{T_i+X)}=\sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+X},\]
-which implies $\restricttoset{f}{\subspace}\subset \tab$.
+\[\sum_{i\in [\tabsize]}\frac{m_i}{T_i+X}=\sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+X},\]
+which implies $\restricttoset{f}{\subspace}\subset \tab$ by Lemma \ref{lem:mvlookup}.
 \end{itemize}
 In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
