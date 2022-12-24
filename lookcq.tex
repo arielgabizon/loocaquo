@@ -525,9 +525,10 @@ In this paper, we present a protocol called \cq\space  - short for ``cached quot
 \subsection{Technical Overview}
 We explain our protocol in the context of the line of work starting from \cite{caulk}.
 \paragraph{The innovation of \caulk}
-To restate the problem, we have an input polynomial $f(X)$,  a table \tab of size \tabsize encoded in the values of 
-a polynomial $T(X)\in \polysofdeg{\tabsize}$, and wish to show $\restricttoset{f}{\subspace}\subset \tab$, where $|\subspace|=\witsize << \tabsize$.
+To restate the problem, we have an input polynomial $f(X)$,  a table \tab of size \tabsize encoded as the values of 
+a polynomial $T(X)\in \polysofdeg{\tabsize}$ on a subgroup \bigspace of size \tabsize. We want to show $f$'s values on a subgroup \subspace of size \witsize are contained in \tab; concisely that $\restricttoset{f}{\subspace}\subset \tab$. We think of the parameters as $\witsize<<\tabsize$.
 We want our prover \prv to perform a number of operations \emph{sublinear} in \tabsize, or ideally, a number of operations depending only on \witsize. 
+
 One natural approach - is to send  the verifier \ver, a polynomial $T'$ encoding 
 the \emph{\witsize values from \tab actually used in $f$}, and then run a lookup protocol using $T'$.
 The challenging problem is to prove \emph{$T'$ actually encodes values from $T$}.
@@ -542,16 +543,15 @@ Moreover, having only a commitment to $Q$ suffices to check, via pairings, that 
 
 This approach was a big step forward, enabling for the first time lookups sublinear in table size.
 However, it has the following disadvantage:
-``Extracting'' the subtable of values used in $f$, necessitates interpolation and evaluation of polynomials
-on arbitrary sets, rather than just subgroups. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we are used to from FFT's on subgroups.
+``Extracting'' the subtable of values used in $f$, is analogous to looking at restrictions of the original table polynomial to arbitrary sets - far
+from the nice subgroups we are used to in zk-SNARK world. Very roughly speaking, this is why all previous four works end up needing to 
+work with interpolation and evaluation of polynomials on arbitrary sets, rather than just subgroups. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we get for FFTs and IFFTs on subgroups.
 
-Moreover, when desiring to work with a \emph{homomorphic} table commitment, the \caulk approach requires working
-with a $T'$ that encodes the subtable values on a ``hidden'', prover-defined set of inputs; consequently requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
+% Moreover, when desiring to work with a \emph{homomorphic} table commitment, the \caulk approach requires working
+% with a $T'$ that encodes the subtable values on a ``hidden'', prover-defined set of inputs; consequently requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
 \paragraph{Our approach}
-The key difference between \cq and \cite{caulk,caulkp,flookup,baloo} is that we use the idea of succinct computation
-of quotient commitments, not to extract a subtable, but to directly run an exisiting lookup protocol on the original large table,  with a modified prover performing only $O(\witruntime)$ operations.
-
-
+The key difference between \cite{caulk,caulkp,flookup,baloo} and \cq is that we use the idea of succinct computation
+of quotient commitments, not to extract a subtable, \emph{but to directly run an exisiting lookup protocol on the original large table more efficiently}.
 Specifically, we use as our starting point the ``logarithmic derivative based lookup'' of \cite{mvlookup}.
 
 \cite{mvlookup} utilizes the following lemma (cf. Lemma \ref{lem:mvlookup}):
@@ -568,13 +568,17 @@ is at most \witsize. So we precompute the commitments to the Lagrange base of  \
 
 The main challenge, and innovation, is to convince the verifier \ver that $A$ is correctly formed.
 This is equivalent to the existence of a quotient polynomial $Q_A(X)$ such that
-\[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
+\[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X).\]
 
 
-This protocol is amenable, because polynomials involved have sparsity depending on witness
-- For large table problem is computing A that agrees with $m/(\tab+\beta)$ on \bigspace
+Here is where are central innovation, and the term ``cached quotients'' come from. We observe that while computing 
+$Q_A$ would take too long, we can compute the commitment to $Q_A$ in $O(\witsize)$ operations as follows.
+We precompute for each $L_i(X)$ in the Lagrange basis of \bigspace its quotient commitments when multiplying with $T(X)$, i.e.
+the commitment to $Q_i(X)$ such that for some $R(X)\in \polysofdeg{\tabsize}$.
 
-- Need way to compute $A$ 
+\[L_i(X)T(X)= Q_i(X)\cdot Z_\bigspace(X) + R(X).\]
+
+Given the commitments to \enc1{Q_i(x)} \enc1{Q_A(x)} can be computed in $O(\witsize)$ \G1 operations.
 \section{Preliminaries}
 \subsection{Terminology and Conventions}\label{sec:terminology}
 We assume our field \F is of prime order.
