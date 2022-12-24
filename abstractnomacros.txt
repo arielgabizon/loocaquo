@@ -1,0 +1,8 @@
+ We present a protocol called $\mathsf{cq}$ for checking the values of a committed polynomial $f(X)\in \mathbb{F}_{<n}(X)$ over a multiplicative subgroup $H\subset \mathbb{F}$ of size $n$ are contained in a
+ table $t\in \mathbb{F}^N$. After an $O(N \log N)$ preprocessing step, the prover algorithm runs in time $O(n\log n)$.
+ Thus, we continue to improve upon the recent breakthrough sequence of results [ZBKMNS,PK,GK,ZGKMR] starting from $\mathsf{Caulk}$ [ZBKMNS], which achieve sublinear complexity in the table size \tabsize. The two most recent works in this sequence $\mathsf{Ba}\mathit{loo}$ [ZGKMR] and $\mathsf{flookup}$ [GK] achieved prover complexity $O(n\log^2 n)$.
+ 
+ Moreover, $\mathsf{cq}$ has the following attractive features.
+ 1. As in [ZBKMNS,PK,ZGKMR] our construction relies on homomorphic table commitments, which makes them amenable to vector lookups.
+ 2. As opposed to the previous four works, our verifier doesn't involve pairings with prover defined $\mathbb{G}_2$ points, which makes recursive aggregation of proofs more convenient.
+ 
