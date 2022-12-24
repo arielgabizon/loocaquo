@@ -485,12 +485,24 @@ Somewhat informally, it asks for a protocol to prove the values of a committed p
 When the table $T$ corresponds to an operation without an efficient low-degree arithmetization in $\F$, such a protocol produces significant savings in proof construction time for programs containing the operation.
 Building on previous work of \cite{arya}, \plookup \cite{plookup} was the first to explicitly describe a solution to this problem in the polynomial-IOP context. \plookup described a protocol with prover complexity quasilinear in both \witsize and \tabsize.
 This left the intriguing question of whether the dependence on \tabsize could be made \emph{sublinear} after performing a preprocessing step for the table $T$.
-\caulk \cite{caulk} answered this question in the affirmative by leveraging bi-linear pairings, achieving a run time of $O(\witsize^2+\witsize\log \tabsize)$. \caulkp \cite{caulkp} improved this to $O(\witsize^2)$ getting rid of the dependence on table size completely. 
+\caulk \cite{caulk} answered this question in the affirmative by leveraging bi-linear pairings, achieving a run time of $O(\witsize^2+\witsize\log \tabsize)$. \caulkp \cite{caulkp} improved this to $O(\witsize^2)$ getting rid of the dependence on table size completely.\footnote{A nuance is that while the \emph{number} of field and group operations are independent of table size, the field and group must be larger than the table in all these constructions, including this paper.} 
 
-However, the quadratic dependence on \witsize  of these works makes them impractical for a circuit with many lookup gates.
-We resolve this issue by giving a protocol called \cq that is quasi-linear in \witsize and has no dependence on \tabsize after the preprocessing step.
+Naturally, the quadratic dependence on \witsize  of these works made them impractical for a circuit with many lookup gates. This was resolved in two more recent protocols - \baloo\cite{baloo} and \flookup\cite{flookup} achieving a runtime of $O(\witsize\log^2\witsize)$.
+While \flookup has better concrete constants, \baloo preserved an attractive feature of \caulk\space  - using a \emph{homomorphic commitment} to the table. In the sense that given commitments $\cm_1,\cm_2$ to tables $T_1,T_2$ with elements \set{a_i},\set{b_i} respectively;
+we can check membership in the set of elements $\set{a_i+\alpha b_i}$ by running the protocol with $\cm\defeq \cm_1+\alpha\cdot \cm_2$ as the table commitment. This is crucial for vector lookups that have become popular in zk-SNARKs, as described in Section 4 of \cite{plookup}.
 
-\subsection{Comparison of results}
+One drawback of all for recent constructions - \caulk,\caulkp,\baloo,\flookup; is that they require the verifier perform a pairing where both \G1 and \G2 pairing arguments are not fixed in the protocol, but prover defined. This makes it harder to recrusively aggregate multiple proofs via random combination, in the style described e.g. in Section 8 of \cite{bcms}.
+
+\subsection{Our results}
+
+In this paper, we present a protocol called \cq\space  - short for ``cached quotients'' which is a central technical component in the construction (and arguably in all four preceding works). 
+\cq
+\begin{enumerate}
+ \item Improves asymptotic prover performance in field operations from $O(\witsize\log^2\witsize)$ to $O(\witsize\log\witsize)$.
+ \item Achieves small constants in proof size and group operations, \emph{while preserving homomorphicity} as in \caulk,\caulkp and \baloo.
+ \item Achieves for the first time in this line of work convenient aggregatability by having all verifier contain fixed protocol defined \G2 arguments.
+\end{enumerate}
+
 \begin{table}[!htbp]
 	\caption{Scheme comparison. $\witsize$ = witness size, \tabsize = Table size, ``Aggregatable''= All prover defined pairing arguments in \G1}
 	\centering
@@ -499,23 +511,16 @@ We resolve this issue by giving a protocol called \cq that is quasi-linear in \w
 	\thead{Scheme} & \thead{Preprocessing} & \thead{Proof size} & \thead{Prover Work} & \thead{Verifier Work} & \thead{Homomorphic?} & \thead{Aggregatable?} \\ \hline
 		\caulk\cite{caulk}
 		        & O(\tabruntime) \F,\G1 & $14$ \G1, 1 \G2, 4 \F      &   $O(\witsize^2+\witsize \cdot \log(\tabsize))$ \F,\G1 & $4P$  & \cmark & \xmark \\ \hline
-		\caulkp\cite{caulkp} & $O(\tabruntime)$ \F,\G1 & $7$ \G1, $1$ \G2, $2$ \F      &   14\witsize \G1, \witsize \G2, $O(\witsize^2)$ \F,\G1& $3P$ & \cmark & \xmark \\ \hline
+		\caulkp\cite{caulkp} & $O(\tabruntime)$ \F,\G1 & $7$ \G1, $1$ \G2, $2$ \F      &    $O(\witsize^2)$ \F,\G1& $3P$ & \cmark & \xmark \\ \hline
 		\flookup\cite{flookup} & $O(\tabsize \log^2 \tabsize)$ \F,\G1             & $6$ \G1, $1$ \G2, $4$ \F  & $6\witsize$ \G1, \witsize \G2, $O(\witsize\log^2\witsize)$ \F        & $3P$ & \xmark & \xmark \\ \hline
 		\baloo\cite{baloo}       & $O(\tabruntime)$ \F,\G1   & $12$ \G1, $1$ \G2, $4$ \F    & $13n$ \G1 $n$ \G2, $O(n\log^2n)$ \F         & $5P$ & \cmark & \xmark \\ \hline
-		\cq (this work)         & $O(\tabruntime)$ \F,\G1     & $8$ \G1, $4$ \F & $8n$ \G1, $O(n\log n)$ \F  & $5P$ & \cmark & \cmark \\ \hline
+		\cq (this work)         & $O(\tabruntime)$ \F,\G1     & $8$ \G1, $4$ \F & $8n$ \G1, $O(n\log n)$ \F  & $4P$ & \cmark & \cmark \\ \hline
 % 		\cqstar          &   \makecell[l]{$O(\tabruntime + \tabsize\cdot \witruntime)$ \F,\G1 \\ $O(\witruntime)$ \G2}  & $6$ \G1, $1$ \G2, $1$ \F & \makecell[l]{$9n + 9a$ \G1 exp , \\ $\approx54(n+a)\text{log}(n+a)$ \F mul}        & $9$ \G1, $6$ \F & \cmark & \xmark \\ \hline
 	\end{tabular}
 \end{adjustbox}
 \label{table:prover-work}
 \end{table} \
 
-Table with relative proof size, prover ops, verifier ops
-                proof-size
-caulk
-caulk+
-flookup
-baloo         12 \G1, 1 \G2, 4 \F
-this work  6 G1, 1 G2
 
 \subsection{Technical Overview}
 We explain our protocol in the context of the line of work starting from \cite{caulk}.
@@ -737,7 +742,7 @@ There is an algorithm \alg that after a preprocessing step of $O(\tabruntime)$ \
 
 
 Given input $A(X)\in \polysofdeg{\tabsize}$ that is \witsize-sparse and given in sparse representation, \alg computes in 
-$O(\witsize)$ \F-operations and \witsize \G1-operations the elements
+$O(\witsize)$ \F-operations and \witsize \G1-operations each of the elements
 $\cm_1=\enc1{Q(x)},\cm_2=\enc1{R(x)}$ for $Q(X),R(X)\in \polysofdeg{\tabsize}$ such that
 \[A(X)\cdot T(X) = Q(X)\cdot Z_{\bigspace}(X) + R(X).\]
 \end{thm}
@@ -770,14 +775,13 @@ Q(X)=\sum_{i \in  \supp{A}} A_i \cdot Q_i(X) \\
 
 
 \section{$\cq\;$ - our main protocol}
-Before describing our protocol, we give a definition of a lookup protocol secure against algerbic adversaries.
+Before describing our protocol, we give a definition of a lookup protocol secure against algebraic adversaries.
 \begin{dfn}\label{dfn:lookupprot}
-A lookup protocol as a tuple $(\gen,\isintable)$ such that
+A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 \begin{itemize}
- \item $\gen(\tabsize,\tab,d)$ is a randomized algorithm receiving as input parameters $\tabsize,\tab\in \F^\tabsize,d$ for $d\geq \tabsize$\footnote{The somewhat awkward $d$ parameter's purpose is to enforce security also when starting with an \srs of higher degree than \tabsize.}.
- Given these inputs \gen outputs a string \srs such that all elements of \srs are linear combinations of \sett{\enc1{x^i}}{i\in[0,\ldots,d]} or
- of \sett{\enc2{x^i}}{i\in[0,\ldots,d]}.
- \item $\isintable(\tab,\cm,\srs,\subspace;f)$ an interactive public coin protocol between \prv and \ver where \prv has private input $f\in \polysofdeg{\witsize}$, and both parties have access to $\tab,\cm$ and  $\srs=\gen(\tabsize,\tab,d)$.
+ \item $\gen(\tabsize,\tab)$ is a randomized algorithm receiving as input parameters $\tabsize,\tab\in \F^\tabsize$. 
+ Given these inputs \gen outputs a string \srs.
+ \item $\isintable(\cm,\tab,\srs,\subspace;f)$ is an interactive public coin protocol between \prv and \ver where \prv has private input $f\in \polysofdeg{\witsize}$, and both parties have access to $\tab,\cm$ and  $\srs=\gen(\tabsize,\tab)$.
  such that
  \begin{itemize}
   \item \textbf{Completeness:} If $\cm=\enc1{f(x)}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
@@ -787,7 +791,7 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
 \begin{enumerate}
 \item \adv chooses integer parameters $\tabsize,\witsize$ and a table $\tab\in \F^\tabsize$.
  \item We compute $\srs=\gen(\tab,\tabsize,\witsize)$.
- \item \adv sends a message \cm and $f\in\polysofdeg{d}$ such that $\cm=\enc1{f(x)}$.
+ \item \adv sends a message \cm and $f\in\polysofdeg{\tabsize}$ such that $\cm=\enc1{f(x)}$.
  \item \adv and \ver engage in the protocol $\isintable(\tab,\cm,\srs,\subspace)$ with \adv taking the role of \prv.
  \item \adv wins if 
  \begin{itemize}
@@ -801,16 +805,16 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
 \end{dfn}
 \subsection{The \cq protocol}
 
-\underline{$\gen(\tab,\tabsize,\witsize,d)$:}\\ \noindent
+\underline{$\gen(\tabsize,\tab)$:}\\ \noindent
 \begin{enumerate}
-\item Choose random $x\in \F$ compute and outputs \sett{\enc1{x^i},\enc2{x^i}}{i\in \set{0,\ldots,d}}
-\item Output \enc2{Z_\bigspace(x)}.
+\item Choose random $x\in \F$ compute and outputs \sett{\enc1{x^i}}{i\in \set{0,\ldots,\tabsize-1}},\sett{\enc2{x^i}}{i\in \set{0,\ldots,\tabsize}}
+\item Compute and output \enc2{Z_\bigspace(x)}.
 \item Compute $T(X)=\sumi{\tabsize}\tab_i L_i(X)$. Compute and output \enc2{T(x)}.
  \item Compute for $i\in [\tabsize]$ compute and output:
  \begin{enumerate}
   \item $q_i=\enc1{Q_i(x)}$ such that
   \[L_i(X)\cdot T(X)=\tab_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X).\]
-  \item $\enc1{L_i(x)},\enc1{x^{d-\tabsize}L_i(x)},\enc1{x^{d-\witsize}}$
+  \item $\enc1{L_i(x)}$.
   \item $\enc1{\frac{L_i(x)-L_i(0)}{x}}$.
  \end{enumerate}
 
@@ -827,7 +831,7 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
  \item \prv sends $\m\defeq \enc1{m(x)}$.
  \end{enumerate}
-	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree checks for $A,B$ using pairings} \ \\
+	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree check for $B$ using pairings} \ \\
  
 \begin{enumerate}
  \item \ver chooses and sends random $\alpha,\beta \in \F$.
@@ -842,11 +846,11 @@ A lookup protocol as a tuple $(\gen,\isintable)$ such that
 \item \prv computes and sends the value $a_0\defeq A(0)$.
 \item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
 \item \prv computes and sends $\p=\enc1{P(x)}$ where
-\[P(X)\defeq A(X)\cdot X^{d-\tabsize}+\alpha\cdot B(X)\cdot X^{d-\witsize}. \]
+\[P(X)\defeq  B(X)\cdot X^{\tabsize-\witsize}. \]
 \item\label{step:checkqa} \ver checks that $A$ encodes the correct values:
 \[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
-\item\label{step:checkadeg} \ver checks that $A,B$ have the appropriate degrees:
-\[e\left(\a,\enc2{x^{d-\tabsize}}\right)\cdot e\left(\alpha\cdot \b,\enc2{x^{d-\witsize}}\right)=e(\p,\enc2{1}).\]
+\item\label{step:checkadeg} \ver checks that $B$ have the appropriate degrees:
+\[e\left(\b,\enc2{x^{\tabsize-\witsize}}\right)=e(\p,\enc2{1}).\]
  \end{enumerate}
 	\paragraph{\textbf{Round 3:} Checking correctness of  $B$ at random $\gamma \in \F$}
  \begin{enumerate}
@@ -918,13 +922,14 @@ Which means that for all $i\in [\tabsize]$,
 \[A_i=\frac{M_i}{T_i+\beta}\]
 
 \item From step  \ref{step:checkadeg}
-\[X^{d-\tabsize}A(X)+\alpha\cdot X^{d-\witsize}B(X)=P(X),\]
-which implies e.w.p. $1/|\F|$ over $\alpha\in \F$, that $\deg(A)<\tabsize$ and $\deg(B)<\witsize$.
+\[X^{\tabsize-\witsize}B(X)=P(X),\]
+which implies  that  $\deg(B)<\witsize$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
+point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing.}
 
 \item From the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an expalantion of the correctness of batched KZG \cite{kate}). 
 $\bgam = B(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0),b_0=B(0)$.
 
-\item Which implies by how \qbgam is set in step \ref{step:setQB}  that e.w.p. $(2\witsize)/|\F|$ over $\gamma$ 
+\item Which implies by how \qbgam is set in step \ref{step:setQB}  that e.w.p. $(\tabsize+ \witsize)/|\F|$ over $\gamma$ 
 \[B(X)\cdot (f(X)+\beta)=1+ Q_B(X)Z_\subspace(X),\]
 which implies for all $i\in [\witsize]$ that
 $B(\hgen^i)=\frac{1}{f(\hgen^i)+\beta}$.
@@ -937,85 +942,6 @@ which implies $\restricttoset{f}{\subspace}\subset \tab$.
 \end{itemize}
 In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
-
-% \section{\cqstar}
-% The only point where \prv does $O(\witruntime)$ operations in \cq is using FFT's to compute $Q_B(X)$. Similarly to what we did with $Q_A(X)$ we could 
-% try to only compute the commitment \enc1{Q_B(x)}
-% $\gen(\tab,\srs)$
-% 
-% Main protocol:
-% $\gen(\tab,\tabsize,\srsbase=(\enc1{x^i},\enc2{x^i})_{i\in [0,\ldots,d})$:
-% \begin{enumerate}
-% \item 
-% \enc2{Z_\bigspace(x)}, \enc2{T(x)}.
-%  \item Compute for $i\in [\tabsize]$:
-%  \begin{enumerate}
-%   \item $q_i=\enc1{Q_i(x)}$ such that
-%   \[L_i(X)\cdot T(X)=\tab_i\cdot L_i(X) + Z_\bigspace(X)\cdot Q_i(X).\]
-%   \item $\enc1{L_i(x)},\enc1{x^{d-\tabsize}L_i(x)},\enc1{x^{d-\witsize}}$
-%   \item $\enc1{\frac{L_i(x)-L_i(0)}{x}}$.
-%  \end{enumerate}
-% 
-% \end{enumerate}
-% Preprocessed inputs:
-% \enc2{Z_\bigspace(x)}, \enc2{T(x)}
-% Input $(\cm,f)$.
-% 	\paragraph{\textbf{Round 1:} Committing to the multiplicities vector, and $f$ in \G2} \ \\
-% \begin{enumerate}
-%  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}
-%  \item \prv sends $\m\defeq \enc1{m(x)}$.
-%  \item \prv sends $\ftwo \defeq \enc2{f(x)}$
-%  \item \ver checks correctness of \ftwo via
-%  \[e(\f,\enc2{1})=e(\enc1{1},\ftwo).\]
-%  \end{enumerate}
-% 	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of degrees and values of  $A,B$ using pairings} \ \\
-%  
-% \begin{enumerate}
-%  \item \ver chooses and sends random $\alpha,\beta \in \F$.
-% \item \prv computes $A\in \polysofdeg{\tabsize}$ such that for $i\in [\tabsize]$, $A_i = m_i/(\tab_i+\beta)$.
-% \item \prv sends $\a\defeq \enc1{A(x)}$.
-% \item\label{qstr-step:computeQA} \prv computes $\qa \defeq \enc2{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
-% \[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
-% \item \prv computes $B\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
-% \item \prv sends $\qb\defeq \enc1{B(x)}$.
-% \item \prv computes $\qb\defeq \enc1{Q_B(X)}$ such that 
-% \[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X)\]
-% \item \prv computes and sends the value $a_0\defeq A(0)$.
-% \item \ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
-% \item \prv computes and sends $\p=\enc1{P(x)}$ where
-% \[P(X)\defeq A(X)\cdot X^{d-\tabsize}+\alpha\cdot B(X)\cdot X^{d-\witsize}. \]
-% \item\label{qstr-step:checkqa} \ver checks that $A$ encodes the correct values:
-% \[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
-% \item\label{qstr-step:checkqb} \ver checks that $B$ encodes the correct values:
-% \[e(\b,\enc2{\f}+\enc2{\beta} )=e(\qb,\enc2{Z_\subspace(x)})\cdot e(\enc1{1},\enc2{1})\]
-% \item\label{qstr-step:checkadeg} \ver checks that $A,B$ have the appropriate degrees:
-% \[e\left(\a,\enc2{x^{d-\tabsize}}\right)\cdot e\left(\alpha\cdot \b,\enc2{x^{d-\witsize}}\right)=e(\p,\enc2{1}).\]
-%  \end{enumerate}
-% 	\paragraph{\textbf{Round 3: Checking correctness of $A(0),B(0)$}}
-%  \begin{enumerate}
-% \item \ver sends random $\zeta \in \F$.
-% \item To perform a batched KZG check for the correctness of the values  $a_0,b_0$
-%   \begin{enumerate}
-%    \item  \prv and \ver separately compute
-%    \[u\defeq a_0+\zeta \cdot b_0.\] 
-%    \item \prv computes and sends $\zerproof\defeq \enc1{h_0(x)}$ for 
-%    \[h_0(X)\defeq \frac{A(X)+\zeta\cdot B(X)}{X}\]
-%    \item\label{step:checkKZG2} \ver computes 
-%    \[\c_0 \defeq \a +\zeta \b\]
-%    and  checks that 
-%    \[e(\c_0-\enc1{u},\enc2{1})=e(\zerproof,\enc2{x})\]
-%   \end{enumerate}
-% \end{enumerate}
-% 
-% \paragraph{Stats:}
-% 
-% verifier pairings:5 - pair \a with random combination of $T$ and \enc2{x^{d-\tabsize}}, pair \qa with $Z_\bigspace$.
-% pair \b with \enc2{d-\witsize} for degree check.
-% Proof size - 6 \G1 - \a,\b,\p,\m,\qa,\qb,\zerproof    
-%                       1 \G2 - \ftwo
-%                       1 \F- $a_0$
-%                      
-% 
 \bibliographystyle{alpha}
 \bibliography{references}
 \end{document}
