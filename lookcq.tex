@@ -545,7 +545,7 @@ This approach was a big step forward, enabling for the first time lookups sublin
 However, it has the following disadvantage:
 ``Extracting'' the subtable of values used in $f$, is analogous to looking at restrictions of the original table polynomial to arbitrary sets - far
 from the nice subgroups we are used to in zk-SNARK world. Very roughly speaking, this is why all previous four works end up needing to 
-work with interpolation and evaluation of polynomials on arbitrary sets, rather than just subgroups. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we get for subgroups (of order $2^k$ for example).
+work with interpolation and evaluation of polynomials on arbitrary sets. The corresponding algorithms for working on such sets have asymptotics of $O(\witsize\cdot \log^2 \witsize)$ rather than the $O(\witruntime)$ we get for subgroups (of order $2^k$ for example).
 
 % Moreover, when desiring to work with a \emph{homomorphic} table commitment, the \caulk approach requires working
 % with a $T'$ that encodes the subtable values on a ``hidden'', prover-defined set of inputs; consequently requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
@@ -561,7 +561,7 @@ $\restricttoset{f}{\subspace}\subset \tab$ if and only if for some $m\in \F^\tab
 \cite{mvlookup} checks this identity on a random $\beta$,
 by sending commitment to polynomials $A$ and $B$ whose values correspond to the summands evaluated at $\beta$ of the LHS and RHS
 respectively.
-Given commitments to $A,B$, we can check the above equality holds via various sumcheck techniques, e.g. that described in \cite{aurora} (cf. Lemma \ref{lem:aurora}).
+Given commitments to $A,B$, we can check the above equality holds via various sumcheck techniques, e.g. as described in \cite{aurora} (cf. Lemma \ref{lem:aurora}).
 The RHS is not a problem because it is a sum of size \witsize.
 Computing $A$'s commitment is actually not a problem either, because the number of its non-zero values on \bigspace
 is at most \witsize. So when precomputing the commitments to the Lagrange base of  \bigspace, we can compute $A$'s commitment in  \witsize group operations.
@@ -832,7 +832,7 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 \\
 \noindent
 \underline{$\isintable(\cm,\tab,\srs,\subspace;f)$:} \\ \noindent
-\paragraph{\textbf{Round 1:} Committing to the multiplicites vector} \ \\
+\paragraph{\textbf{Round 1:} Committing to the multiplicities vector} \ \\
 \begin{enumerate}
  \item \prv computes poly $m\in \polysofdeg{\tabsize}$ such that $m_i=$ number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
  \item \prv sends $\m\defeq \enc1{m(x)}$.
