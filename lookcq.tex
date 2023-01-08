@@ -937,7 +937,7 @@ Which means that for all $i\in [\tabsize]$,
 \item From Round 2, Step  \ref{step:checkadeg}
 \[X^{\degoffset}B_0(X)=P(X),\]
 which implies  that  $\deg(B_0)\leq\witsize-2$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
-point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing. In such a case, we must also change the power of $X$ in Step \ref{step:checkadeg} from \degoffset to $d-(\witsize-2)$ where $d$ is the maximal SRS degree in \G1.}
+point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing. In such a case, we must also change the power of $X$ in Step \ref{step:checkadeg} of Round 2 from $\degoffset$ to $d-(\witsize-2)$ where $d$ is the maximal SRS degree in \G1.}
 
 \item Moving to Round 3, from the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an explanation of batched KZG \cite{kate}), we have  
 $\bzergam = B_0(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0)$.
