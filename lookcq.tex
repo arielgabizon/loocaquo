@@ -462,7 +462,7 @@
 \newcommand{\fgam}{\ensuremath{f_{\gamma}}\xspace}
 \newcommand{\pgam}{\ensuremath{P_{\gamma}}\xspace}
 \newcommand{\supp}[1]{\ensuremath{\mathrm{supp}(#1)}\xspace}
-
+\newcommand{\degoffset}{\ensuremath{\tabsize-1-(\witsize-2)}\xpsace}
 \begin{document}
     \maketitle
 \begin{abstract}
@@ -492,7 +492,7 @@ Naturally, the quadratic dependence on \witsize  of these works made them imprac
 While \flookup has better concrete constants, \baloo preserved an attractive feature of \caulk\space  - using a \emph{homomorphic commitment} to the table. This means that given commitments $\cm_1,\cm_2$ to tables $T_1,T_2$ with elements \set{a_i},\set{b_i} respectively;
 we can check membership in the set of elements $\set{a_i+\alpha b_i}$ by running the protocol with $\cm\defeq \cm_1+\alpha\cdot \cm_2$ as the table commitment. This is crucial for vector lookups that have become popular in zk-SNARKs, as described in Section 4 of \cite{plookup}.
 
-One drawback of all for recent constructions - \caulk,\caulkp,\baloo,\flookup; is that they require the verifier perform a pairing where both \G1 and \G2 pairing arguments are not fixed in the protocol, but prover defined. This makes it harder to recrusively aggregate multiple proofs via random combination, in the style described e.g. in Section 8 of \cite{bcms}.
+One drawback of all four recent constructions - \caulk,\caulkp,\baloo,\flookup; is that they require the verifier perform a pairing where both \G1 and \G2 pairing arguments are not fixed in the protocol, but prover defined. This makes it harder to recrusively aggregate multiple proofs via random combination, in the style described e.g. in Section 8 of \cite{bcms}.
 
 \subsection{Our results}
 
@@ -718,19 +718,19 @@ in $O(\tabsize\cdot \log \tabsize)$ \G1 operations.
     \[Q_i(X) = \frac{T(X) - T_i}{Z_\bigspace'(\vgen^i) (X - \vgen^i)} =
     Z_\bigspace'(\vgen^i)^{-1} K_i(X), \]
 for $K_i(X)\defeq \frac{T(X)-T_i}{X-\vgen^i}$.
-Note that the values \sett{\enc1{K_i(X)}}{i\in [\tabsize]} are exactly the KZG opening proofs of $T(X)$ at the
+Note that the values \sett{\enc1{K_i(x)}}{i\in [\tabsize]} are exactly the KZG opening proofs of $T(X)$ at the
 elements of \bigspace.
     Thus, the algorithm of Feist and Khovratovich \cite{fastkzgproofsorig, fastkzgproofs} 
-    can be used to compute commitments to all the proofs $\enc1{K_i(X)}$ 
+    can be used to compute commitments to all the proofs $\enc1{K_i(x)}$ 
     in $O(\tabruntime)$ \G1-operations. This works by writing the vector of
-    $\enc1{K_i(X)}$ as a the product of a matrix with the vector of
-    $\enc1{X^i}$. This matrix is a DFT matrix times a Toeplitz matrix, both of
+    $\enc1{K_i(x)}$ as a the product of a matrix with the vector of
+    $\enc1{x^i}$. This matrix is a DFT matrix times a Toeplitz matrix, both of
     which have algorithms for evaluating matrix vector products in
     $O(\tabruntime)$ operations. Thus, all the KZG proofs can be computed in
     $O(\tabruntime)$ field operations and operations in \G1.
     
-    Finally, the algorithm just needs to scale each $\enc1{K_i(X)}$ by
-    $Z_{\bigspace}'(\vgen^i)$ to compute $\enc1{Q_i(X)}$. Conveniently, these
+    Finally, the algorithm just needs to scale each $\enc1{K_i(x)}$ by
+    $Z_{\bigspace}'(\vgen^i)$ to compute $\enc1{Q_i(x)}$. Conveniently, these
     values admit a very simple description when $Z_\bigspace(X) = X^\tabsize -
     1$ is a group of roots of unity.
     \[Z_\bigspace'(X)^{-1} = (\tabsize X^{\tabsize-1})^{-1} \equiv X / \tabsize \mod Z_\bigspace(X)\] 
@@ -810,6 +810,7 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
 \end{enumerate}
 \end{itemize}
 \end{itemize}
+We say a lookup protocol is \emph{homomorphic} if for any fixed parameter \tabsize and fixed randomness, $\gen(\tab,\tabsize)$ can be written as $(\gen_1,\gen_2(\tab))$ such that $\gen_1$ is fixed, and $\gen_2$ is an $\F$-linear function of \tab.
 \end{dfn}
 
 \subsection{The \cq protocol}
@@ -839,7 +840,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 \underline{$\isintable(\cm,\tab,\srs,\subspace;f)$:} \\ \noindent
 \paragraph{\textbf{Round 1:} Committing to the multiplicities vector} \ \\
 \begin{enumerate}
- \item \prv computes the polynomial $m\in \polysofdeg{\tabsize}$ defined by setting $m_i$, for each $i\in [\tabsize]$, to the number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
+ \item \prv computes the polynomial $m(X)\in \polysofdeg{\tabsize}$ defined by setting $m_i$, for each $i\in [\tabsize]$, to the number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
  \item \prv sends $\m\defeq \enc1{m(x)}$.
  \end{enumerate}
 	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree check for $B$ using pairings} \ \\
@@ -858,11 +859,11 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 \item \prv computes and sends $\qb\defeq \enc1{Q_B(x)}$.
 
 \item \prv computes and sends $\p=\enc1{P(x)}$ where
-\[P(X)\defeq  B_0(X)\cdot X^{\tabsize-(\witsize+1)}. \]
+\[P(X)\defeq  B_0(X)\cdot X^{\degoffset}. \]
 \item\label{step:checkqa} \ver checks that $A$ encodes the correct values:
-\[e(\a,\enc2{T(x)}+\enc2{\beta} )=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m,\enc2{1})\]
+\[e(\a,\enc2{T(x)})=e(\qa,\enc2{Z_\bigspace(x)})\cdot e(\m-\beta\cdot \a,\enc2{1})\]
 \item\label{step:checkadeg} \ver checks that $B_0$ has the appropriate degree:
-\[e\left(\b,\enc2{x^{\tabsize-\witsize-1}}\right)=e(\p,\enc2{1}).\]
+\[e\left(\b,\enc2{x^{\degoffset}}\right)=e(\p,\enc2{1}).\]
  \end{enumerate}
 	\paragraph{\textbf{Round 3:} Checking correctness of  $B$ at random $\gamma \in \F$}
  \begin{enumerate}
@@ -879,7 +880,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
    \item \prv computes $\gamproof\defeq \enc1{h(x)}$ for 
    \[h(X)\defeq \frac{ B_0(X)+ \eta\cdot f(X) + \eta^2\cdot Q_B(X) -v}{X-\gamma}\]
    \item\label{step:checkKZG1} \ver computes 
-   \[\c\defeq \b+\eta\cdot \f +\eta^2\cdot \qb\]
+   \[\c\defeq \b+\eta\cdot \cm +\eta^2\cdot \qb\]
    and checks that 
    \[e(\c-\enc1{v}+\gamma\cdot \gamproof,\enc2{1})=e(\gamproof,\enc2{x}).\]
   \end{enumerate}
@@ -888,13 +889,13 @@ We note  that it's possible to make a similar optimization for $A$ to further re
    \item \prv computes and sends $\zerproof\defeq \enc1{A_0(x)}$ for 
    \[A_0(X)\defeq \frac{A(X)-a_0}{X}\]
    \item\label{step:checkKZG2} \ver checks that 
-   \[e(\c_0-\enc1{a_0},\enc2{1})=e(\zerproof,\enc2{x}).\]
+   \[e(\a-\enc1{a_0},\enc2{1})=e(\zerproof,\enc2{x}).\]
   \end{enumerate}
 
 \end{enumerate}
 
 Note that although the above description contains nine pairings, we can reduce to five pairings via the standard technique of randomly batching
-pairings that share the same \G2 argument.
+pairings that share the same \G2 argument. It is easy to check that \cq is homomorphic according to Definition \ref{dfn:lookupprot}.
                      
                   
     The  main things to address are the efficiency of the \gen algorithm used for preprocessing, the efficiency of \prv in \isintable, and the knowledge soundness of \isintable.
@@ -909,7 +910,7 @@ Given the element \enc1{L_i(x)}, the element \enc1{\frac{L_i(x)-L_i(0)}{x}} can 
 
 \paragraph{Runtime of \prv:}
 Note first that the computation of $\m,\a$ can be done in \witsize \G1-operations as $m(X)$and $A(X)$  are $\witsize$-sparse.
-The main things to address are the computation of \qa; that can be done in \witsize \G1-operations given \srs according to Theorem \ref{thm:sec3main}.
+The main thing to address is the computation of \qa; that can be done in \witsize \G1-operations given \srs according to Theorem \ref{thm:sec3main}.
 The only step requiring $O(\witruntime)$ \F-operations is the computation the quotient $Q_B(X)$ which involves FFT on \subspace.
 We also note that the commitment $\zerproof=\enc1{\frac{A(x)-A(0)}{x}}$ can be computed in \witsize \G1-operations
 as the linear combination 
@@ -934,9 +935,9 @@ Which means that for all $i\in [\tabsize]$,
 \[A_i=\frac{M_i}{T_i+\beta}\]
 
 \item From Round 2, Step  \ref{step:checkadeg}
-\[X^{\tabsize-\witsize-1}B_0(X)=P(X),\]
-which implies  that  $\deg(B_0)<\witsize-1$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
-point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing.}
+\[X^{\degoffset}B_0(X)=P(X),\]
+which implies  that  $\deg(B_0)\leq\witsize-2$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
+point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing. In such a case, we must also change the power of $X$ in Step \ref{step:checkadeg} from \degoffset to $d-(\witsize-2)$ where $d$ is the maximal SRS degree in \G1.}
 
 \item Moving to Round 3, from the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an explanation of batched KZG \cite{kate}), we have  
 $\bzergam = B_0(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0)$.
@@ -958,6 +959,8 @@ which implies $\restricttoset{f}{\subspace}\subset \tab$ by Lemma \ref{lem:mvloo
 \end{itemize}
 In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
+\section*{Acknowledgements}
+We thank Kobi Gurkan and Aurel Nicolas for corrections.
 \bibliographystyle{alpha}
 \bibliography{references}
 \end{document}
