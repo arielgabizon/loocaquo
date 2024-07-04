@@ -462,7 +462,7 @@
 \newcommand{\fgam}{\ensuremath{f_{\gamma}}\xspace}
 \newcommand{\pgam}{\ensuremath{P_{\gamma}}\xspace}
 \newcommand{\supp}[1]{\ensuremath{\mathrm{supp}(#1)}\xspace}
-\newcommand{\degoffset}{\ensuremath{\tabsize-1-(\witsize-2)}\xpsace}
+\newcommand{\degoffset}{\ensuremath{\tabsize-1-(\witsize-2)}\xspace}
 \begin{document}
     \maketitle
 \begin{abstract}
@@ -492,7 +492,7 @@ Naturally, the quadratic dependence on \witsize  of these works made them imprac
 While \flookup has better concrete constants, \baloo preserved an attractive feature of \caulk\space  - using a \emph{homomorphic commitment} to the table. This means that given commitments $\cm_1,\cm_2$ to tables $T_1,T_2$ with elements \set{a_i},\set{b_i} respectively;
 we can check membership in the set of elements $\set{a_i+\alpha b_i}$ by running the protocol with $\cm\defeq \cm_1+\alpha\cdot \cm_2$ as the table commitment. This is crucial for vector lookups that have become popular in zk-SNARKs, as described in Section 4 of \cite{plookup}.
 
-One drawback of all four recent constructions - \caulk,\caulkp,\baloo,\flookup; is that they require the verifier perform a pairing where both \G1 and \G2 pairing arguments are not fixed in the protocol, but prover defined. This makes it harder to recrusively aggregate multiple proofs via random combination, in the style described e.g. in Section 8 of \cite{bcms}.
+One drawback of all four recent constructions - \caulk,\caulkp,\baloo,\flookup; is that they require the verifier perform a pairing where both \G1 and \G2 pairing arguments are not fixed in the protocol, but prover defined. This makes it harder to recursively aggregate multiple proofs via random combination, in the style described e.g. in Section 8 of \cite{bcms}.
 
 \subsection{Our results}
 
@@ -534,7 +534,7 @@ We want our prover \prv to perform a number of operations \emph{sublinear} in \t
 One natural approach - is to send  the verifier \ver a polynomial $T_f$ encoding 
 the \emph{\witsize values from \tab actually used in $f$}, and then run a lookup protocol using $T_f$.
 The challenging problem is then to prove \emph{$T_f$ actually encodes values from $T$}.
-Speaking impercisely, the ``witness'' to $T_f$'s correctness is a quotient $Q$ of degree $\tabsize-\witsize$.
+Speaking imprecisely, the ``witness'' to $T_f$'s correctness is a quotient $Q$ of degree $\tabsize-\witsize$.
 It would defeat our purpose to actually compute $Q$ - as that would require $O(\tabsize)$ operations.
 
 The central innovation of \caulk\cite{caulk} is the following observation: If we precompute commitments to certain quotient polynomials, we can compute in a number of operations depending only on \witsize, the \emph{commitment} to $Q$.
@@ -553,7 +553,7 @@ work with interpolation and evaluation of polynomials on arbitrary sets. The cor
 % with a $T'$ that encodes the subtable values on a ``hidden'', prover-defined set of inputs; consequently requiring more ingenuity and complexity to use the subtable, also after it has been extracted.
 \paragraph{Our approach}
 The key difference between \cite{caulk,caulkp,flookup,baloo} and \cq is that we use the idea of succinct computation
-of quotient commitments, not to extract a subtable, \emph{but to directly run an exisiting lookup protocol on the original large table more efficiently}.
+of quotient commitments, not to extract a subtable, \emph{but to directly run an existing lookup protocol on the original large table more efficiently}.
 Specifically, we use as our starting point the ``logarithmic derivative based lookup'' of \cite{bplusplus,mvlookup}.
 
 \cite{mvlookup} utilizes the following lemma (cf. Lemma \ref{lem:mvlookup} or Lemma 5 in \cite{mvlookup}):
@@ -637,7 +637,7 @@ In our protocols, by an \emph{algebraic adversary} \adv in an SRS-based protocol
  \item For $i\in \set{1,2}$, whenever \adv outputs an element $A\in \Gi$, it also outputs a vector $v$ over \F such that $A = <v,\srsi>$.
 \end{itemize}
 
-First we say our \srs \emph{has degree $Q$} if all elements of \srsi are of the form  \enci{f(x)} for $f\in \polysofdeg{Q}$ and uniform $x\in \F$. In the following discussion let us assume we are executing a protocol with a degree $Q$ SRS, and denote by $f_{i,j}$ the corresponding polynomial for the $j$'th element of \srsi.
+First we say our \srs \emph{has degree $Q$} if all elements of \srsi are of the form  \enci{f(x)} for $f\in \polysofdeg{Q+1}$ and uniform $x\in \F$. In the following discussion let us assume we are executing a protocol with a degree $Q$ SRS, and denote by $f_{i,j}$ the corresponding polynomial for the $j$'th element of \srsi.
 
 Denote by $a,b$ the vectors of $\F$-elements whose encodings in $\G1,\G2$ an algebraic adversary \adv outputs during a protocol execution; e.g., the $j$'th $\G1$ element output by \adv is \enc1{a_j}.
 
@@ -677,7 +677,7 @@ See \cite{plonk} for the proof.
 \paragraph{The log-derivative method}
 We crucially use the following lemma from \cite{mvlookup}.
 \begin{lemma}\label{lem:mvlookup}
- Given $f\in \F^\witsize$, and $t\in \F^\tabsize$,
+ Assume the characteristic of \F is larger than $\max(n,N)$. Given $f\in \F^\witsize$, and $t\in \F^\tabsize$,
  we have $f\subset t$ as sets if and only if for some $m\in \F^\tabsize$ the following identity of rational functions holds
  \[\sumi{\witsize}\frac{1}{X+f_i}=\sumi{\tabsize}\frac{m_i}{X+t_i}.\]
 \end{lemma}
@@ -730,7 +730,7 @@ elements of \bigspace.
     $O(\tabruntime)$ field operations and operations in \G1.
     
     Finally, the algorithm just needs to scale each $\enc1{K_i(x)}$ by
-    $Z_{\bigspace}'(\vgen^i)$ to compute $\enc1{Q_i(x)}$. Conveniently, these
+    $Z_{\bigspace}'(\vgen^i)^{-1}$ to compute $\enc1{Q_i(x)}$. Conveniently, these
     values admit a very simple description when $Z_\bigspace(X) = X^\tabsize -
     1$ is a group of roots of unity.
     \[Z_\bigspace'(X)^{-1} = (\tabsize X^{\tabsize-1})^{-1} \equiv X / \tabsize \mod Z_\bigspace(X)\] 
@@ -738,13 +738,13 @@ elements of \bigspace.
     In total, the prover computes the coefficients of $T(X)$ in $O(\tabruntime)$
     field operations, computes the KZG proofs for $T(\vgen^i) = t_i$ in
     $O(\tabruntime)$ group operations, and then scales these proofs by $\vgen^i
-    / n$ in $O(\tabsize)$ group operations. In total, this takes
+    / N$ in $O(\tabsize)$ group operations. In total, this takes
     $O(\tabruntime)$ field and group operations in \G1.
 \end{proof}
 
 
 \begin{thm}\label{thm:sec3main}
-Fix integer parameters $0\leq n\leq N$ such that $n,N$ are powers of two. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize-1]}$ for some $x\in \F$. 
+Fix integer parameters $0\leq n\leq N$ such that $n,N$ are powers of two dividing $|\F|-1$. Fix $T\in \polysofdeg{\tabsize}$, and a subgroup $\bigspace\subset \F$ of size \tabsize. Let $\srs=\sett{\enc1{x^i}}{i\in[0,\ldots,\tabsize-1]}$ for some $x\in \F$. 
 There is an algorithm \alg that after a preprocessing step of $O(\tabruntime)$ \F- and \G1-operations starting with \srs does the following.
 
 
@@ -840,7 +840,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 \underline{$\isintable(\cm,\tab,\srs,\subspace;f)$:} \\ \noindent
 \paragraph{\textbf{Round 1:} Committing to the multiplicities vector} \ \\
 \begin{enumerate}
- \item \prv computes the polynomial $m(X)\in \polysofdeg{\tabsize}$ defined by setting $m_i$, for each $i\in [\tabsize]$, to the number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
+ \item \prv computes the polynomial $m(X)\in \polysofdeg{\tabsize}$ defined by setting\footnote{We assume here that $\tab$'s values are distinct. If there are duplicates values in \tab, one must rather set $m_i=0$ for the indices $i$ of the duplicates.} $m_i$, for each $i\in [\tabsize]$, to the number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
  \item \prv sends $\m\defeq \enc1{m(x)}$.
  \end{enumerate}
 	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree check for $B$ using pairings} \ \\
@@ -855,7 +855,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 \item\label{step:compB0}  \prv computes $B_0(X)\in \polysofdeg{\witsize-1}$ defined as $B_0(X)\defeq \frac{B(X)-B(0)}{X}$.
 \item \prv computes and sends $\b\defeq \enc1{B_0(x)}$.
 \item \prv computes $Q_B(X)$ such that 
-\[B(X)(f(x)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X).\]
+\[B(X)(f(X)+\beta)-1 = Q_B(X)\cdot Z_\subspace(X).\]
 \item \prv computes and sends $\qb\defeq \enc1{Q_B(x)}$.
 
 \item \prv computes and sends $\p=\enc1{P(x)}$ where
@@ -867,7 +867,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
  \end{enumerate}
 	\paragraph{\textbf{Round 3:} Checking correctness of  $B$ at random $\gamma \in \F$}
  \begin{enumerate}
-\item \ver sends random $\gamma,\eta \in \F$.
+\item \ver sends random $\gamma \in \F$.
 \item \prv sends $\bzergam \defeq B_0(\gamma),\fgam \defeq f(\gamma)$.
 \item \prv computes and sends the value $a_0\defeq A(0)$.
 \item \label{step:setb0}\ver  sets $b_0\defeq (\tabsize\cdot a_0)/\witsize$.
@@ -903,13 +903,13 @@ pairings that share the same \G2 argument. It is easy to check that \cq is homom
     \paragraph{Runtime of \gen:}
 We claim that \gen requires $O(\tabruntime)$ \G1- and \F-operations and $O(\tabsize)$ \G2-operations.
 The claim regarding the \G2 operations is obvious.
-The elements \set{q_i} can be computing in $O(\tabruntime)$ operations according to Lemma \ref{lem:cq-compute}.
+The elements \set{q_i} can be computed in $O(\tabruntime)$ operations according to Lemma \ref{lem:cq-compute}.
 The elements \set{\enc1{L_i(x)}} can be computed in $O(\tabruntime)$ via FFT as explained in Section 3.3 of \cite{FirstMPC}.
 Given the element \enc1{L_i(x)}, the element \enc1{\frac{L_i(x)-L_i(0)}{x}} can be computed as
 \[\enc1{\frac{L_i(x)-L_i(0)}{x}}=\vgen^{-i}\cdot \enc1{L_i(x)}- (1/\tabsize)\cdot \enc1{x^{\tabsize-1}}.\]
 
 \paragraph{Runtime of \prv:}
-Note first that the computation of $\m,\a$ can be done in \witsize \G1-operations as $m(X)$and $A(X)$  are $\witsize$-sparse.
+Note first that the computation of $\m,\a$ can be done in \witsize \G1-operations as $m(X)$ and $A(X)$  are $\witsize$-sparse.
 The main thing to address is the computation of \qa; that can be done in \witsize \G1-operations given \srs according to Theorem \ref{thm:sec3main}.
 The only step requiring $O(\witruntime)$ \F-operations is the computation the quotient $Q_B(X)$ which involves FFT on \subspace.
 We also note that the commitment $\zerproof=\enc1{\frac{A(x)-A(0)}{x}}$ can be computed in \witsize \G1-operations
@@ -927,7 +927,7 @@ Let $E$ be the event that \ver outputs \acc.
 Note that the event that \adv wins the knowledge soundness game is contained in $E$. 
 $E$ implies all pairing checks have passed.
 Let $A\subset E$ be the event that one of the corresponding ideal pairing checks as defined in Section \ref{subsec:agm} didn't pass.
-According to Lemma \ref{lem:AGManalysis}, $\prob(A=\negl)$.
+According to Lemma \ref{lem:AGManalysis}, $\prob(A)=\negl$.
 Given that $A$ didn't occur, we have
 \begin{itemize}
  \item From Round 2, Step \ref{step:checkqa} \[A(X)(T(X)+\beta)-M(X) = Q_A(X)\cdot Z_\bigspace(X)\]
@@ -939,7 +939,7 @@ Which means that for all $i\in [\tabsize]$,
 which implies  that  $\deg(B_0)\leq\witsize-2$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
 point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing. In such a case, we must also change the power of $X$ in Step \ref{step:checkadeg} of Round 2 from $\degoffset$ to $d-(\witsize-2)$ where $d$ is the maximal SRS degree in \G1.}
 
-\item Moving to Round 3, from the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta,\zeta\in\F$ (see e.g. Section 3 of \cite{plonk} for an explanation of batched KZG \cite{kate}), we have  
+\item Moving to Round 3, from the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta\in\F$ (see e.g. Section 3 of \cite{plonk} for an explanation of batched KZG \cite{kate}), we have  
 $\bzergam = B_0(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0)$.
 \item Define $B(X)\defeq B_0(X)\cdot X + b_0$ for $b_0$ set as in step \ref{step:setb0}. 
 Note that we have $\deg(B)<\witsize$. Let \hgen by a generator of \subspace.
@@ -960,7 +960,7 @@ which implies $\restricttoset{f}{\subspace}\subset \tab$ by Lemma \ref{lem:mvloo
 In summary, we have shown the event that \ver outputs \acc while $\restricttoset{f}{\subspace}\not\subset \tab$
 is contained in a constant number of events with probability \negl; and so \cq satisfies the knowledge soundness property.
 \section*{Acknowledgements}
-We thank Kobi Gurkan and Aurel Nicolas for corrections.
+We thank Kobi Gurkan, Aurel Nicolas and Marek Sefranek for corrections.
 \bibliographystyle{alpha}
 \bibliography{references}
 \end{document}
