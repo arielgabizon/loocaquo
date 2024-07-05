@@ -106,7 +106,7 @@
 %\newcommand{\authorname}}
 \newcommand{\company}{}
 \title{ \bf \papertitle \\[0.72cm]}
-\author{ Liam Eagen \\ \tt{Blockstream} \and  Dario Fiore \\ \tt{IMDEA software institute}  \and Ariel Gabizon \\ \tt{Zeta Function Technologies} } 
+\author{ Liam Eagen \\ \tt{Alpen Labs} \and  Dario Fiore \\ \tt{IMDEA software institute}  \and Ariel Gabizon \\ \tt{Aztec Labs} } 
 % 
 % 	\large{\authorname} \\[0.5cm] \large{\company}
 % 	\\ {DRAFT}
@@ -840,7 +840,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 \underline{$\isintable(\cm,\tab,\srs,\subspace;f)$:} \\ \noindent
 \paragraph{\textbf{Round 1:} Committing to the multiplicities vector} \ \\
 \begin{enumerate}
- \item \prv computes the polynomial $m(X)\in \polysofdeg{\tabsize}$ defined by setting\footnote{We assume here that $\tab$'s values are distinct. If there are duplicates values in \tab, one must rather set $m_i=0$ for the indices $i$ of the duplicates.} $m_i$, for each $i\in [\tabsize]$, to the number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
+ \item \prv computes the polynomial $m(X)\in \polysofdeg{\tabsize}$ defined by setting\footnote{We assume here that $\tab$'s values are distinct. If there are duplicate values in \tab, one must rather set $m_i=0$ for the indices $i$ of the duplicates.} $m_i$, for each $i\in [\tabsize]$, to the number of times $\tab_i$ appears in \restricttoset{f}{\subspace}.
  \item \prv sends $\m\defeq \enc1{m(x)}$.
  \end{enumerate}
 	\paragraph{\textbf{Round 2:} Interpolating the rational identity at a random $\beta$; checking correctness of  $A$'s values + degree check for $B$ using pairings} \ \\
@@ -894,8 +894,8 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 
 \end{enumerate}
 
-Note that although the above description contains nine pairings, we can reduce to five pairings via the standard technique of randomly batching
-pairings that share the same \G2 argument. It is easy to check that \cq is homomorphic according to Definition \ref{dfn:lookupprot}.
+Note that although the above description contains nine pairings, we can reduce to five pairings via the standard technique of  combining
+several pairings equations into one pairing product via randomness, and then grouping pairings that share the same \G2 argument. (The different \G2 arguments are $\enc2{1},\enc2{x},\enc2{x^{\degoffset}},\enc2{Z_\bigspace(x)},\enc2{T(x)}$.)  It is easy to check that \cq is homomorphic according to Definition \ref{dfn:lookupprot}.
                      
                   
     The  main things to address are the efficiency of the \gen algorithm used for preprocessing, the efficiency of \prv in \isintable, and the knowledge soundness of \isintable.
@@ -911,7 +911,7 @@ Given the element \enc1{L_i(x)}, the element \enc1{\frac{L_i(x)-L_i(0)}{x}} can 
 \paragraph{Runtime of \prv:}
 Note first that the computation of $\m,\a$ can be done in \witsize \G1-operations as $m(X)$ and $A(X)$  are $\witsize$-sparse.
 The main thing to address is the computation of \qa; that can be done in \witsize \G1-operations given \srs according to Theorem \ref{thm:sec3main}.
-The only step requiring $O(\witruntime)$ \F-operations is the computation the quotient $Q_B(X)$ which involves FFT on \subspace.
+The only step requiring $O(\witruntime)$ \F-operations is the computation of the quotient $Q_B(X)$ which involves FFT on \subspace.
 We also note that the commitment $\zerproof=\enc1{\frac{A(x)-A(0)}{x}}$ can be computed in \witsize \G1-operations
 as the linear combination 
 \[\enc1{\frac{A(x)-A(0)}{x}} =\sum_{i\in \supp{A}}A_i\cdot \enc1{\frac{L_i(x)-L_i(0)}{x}} . \]
@@ -953,7 +953,7 @@ $B(\hgen^i)=\frac{1}{f(\hgen^i)+\beta}$.
 \[\tabsize\cdot a_0 = \sum_{i\in [\tabsize]} A_i = \sum_{i\in [\tabsize]}\frac{m_i}{T_i+\beta},\]
 \[\witsize\cdot b_0 = \sum_{i\in [\witsize]} B(\hgen^i) = \sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+\beta}.\]
 Recall that $b_0$ was set such that $\tabsize \cdot a_0=\witsize\cdot b_0 $.
-Thus e.w.p. $(\witsize\cdot \tabsize)/|\F|$ over $\beta\in \F$, we have that
+Multiplying denominators, we see that e.w.p. $(\witsize+ \tabsize)/|\F|$ over $\beta\in \F$, we have 
 \[\sum_{i\in [\tabsize]}\frac{m_i}{T_i+X}=\sum_{i\in [\witsize]}\frac{1}{f(\hgen^i)+X},\]
 which implies $\restricttoset{f}{\subspace}\subset \tab$ by Lemma \ref{lem:mvlookup}.
 \end{itemize}
