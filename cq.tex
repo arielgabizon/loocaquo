@@ -791,7 +791,7 @@ A \emph{lookup protocol} is a pair $\prot=(\gen,\isintable)$ such that
  \item $\isintable(\cm,\tab,\srs,\subspace;f)$ is an interactive public coin protocol between \prv and \ver where \prv has private input $f\in \polysofdeg{\witsize}$, and both parties have access to $\tab,\cm$ and  $\srs=\gen(\tabsize,\tab)$;
  such that
  \begin{itemize}
-  \item \textbf{Completeness:} If $\cm=\enc1{f(x)}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability one.
+  \item \textbf{Completeness:} If $\cm=\enc1{f(x)}$ and $\restricttoset{f}{\subspace}\subset \tab$ then \ver outputs \acc with probability $1-\negl$.
   \item \textbf{Knowledge soundness in the algebraic group model:}
     The probability of any efficient algebraic \adv to win the following game is \negl.
 
@@ -851,7 +851,7 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 \item \prv computes and sends $\a\defeq \enc1{A(x)}$.
 \item\label{step:computeQA} \prv computes and sends $\qa \defeq \enc1{Q_A(x)}$ where $Q_A\in \polysofdeg{\tabsize}$ is such that 
 \[A(X)(T(X)+\beta)-m(X)= Q_A(X)\cdot Z_\bigspace(X)\]
-\item \prv computes $B(X)\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
+\item\label{step:zerden} \prv computes $B(X)\in \polysofdeg{\witsize}$ such that for $i\in [\witsize]$, $B_i=1/(f_i+\beta)$.
 \item\label{step:compB0}  \prv computes $B_0(X)\in \polysofdeg{\witsize-1}$ defined as $B_0(X)\defeq \frac{B(X)-B(0)}{X}$.
 \item \prv computes and sends $\b\defeq \enc1{B_0(x)}$.
 \item \prv computes $Q_B(X)$ such that 
@@ -896,7 +896,9 @@ We note  that it's possible to make a similar optimization for $A$ to further re
 
 Note that although the above description contains nine pairings, we can reduce to five pairings via the standard technique of  combining
 several pairings equations into one pairing product via randomness, and then grouping pairings that share the same \G2 argument. (The different \G2 arguments are $\enc2{1},\enc2{x},\enc2{x^{\degoffset}},\enc2{Z_\bigspace(x)},\enc2{T(x)}$.)  It is easy to check that \cq is homomorphic according to Definition \ref{dfn:lookupprot}.
-                     
+   
+   There is a \negl probability that \prv  is computing expressions with a zero denominator in some of the steps; we assume \prv aborts in such a case.
+   
                   
     The  main things to address are the efficiency of the \gen algorithm used for preprocessing, the efficiency of \prv in \isintable, and the knowledge soundness of \isintable.
     
@@ -939,10 +941,10 @@ Which means that for all $i\in [\tabsize]$,
 which implies  that  $\deg(B_0)\leq\witsize-2$. Note also that we know $\deg(A)<\tabsize$ simply from \enc1{x^{\tabsize-1}} being the highest \G1 power in \srs.\footnote{An important
 point is that when using an SRS built with higher degrees in \G1, $A$ must also be degree checked via an additional pairing. In such a case, we must also change the power of $X$ in Step \ref{step:checkadeg} of Round 2 from $\degoffset$ to $d-(\witsize-2)$ where $d$ is the maximal SRS degree in \G1.}
 
-\item Moving to Round 3, from the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $\witsize/|\F|$ over $\eta\in\F$ (see e.g. Section 3 of \cite{plonk} for an explanation of batched KZG \cite{kate}), we have  
+\item Moving to Round 3, from the checks of steps \ref{step:checkKZG1} and \ref{step:checkKZG2},  e.w.p. $2/|\F|$ over $\eta\in\F$ (see e.g. Section 3 of \cite{plonk} for an explanation of batched KZG \cite{kate}), we have  
 $\bzergam = B_0(\gamma),\qbgam =Q_B(\gamma),\fgam =f(\gamma),a_0=A(0)$.
 \item Define $B(X)\defeq B_0(X)\cdot X + b_0$ for $b_0$ set as in step \ref{step:setb0}. 
-Note that we have $\deg(B)<\witsize$. Let \hgen by a generator of \subspace.
+Note that we have $\deg(B)<\witsize$ and $B(0)=b_0$. Let \hgen by a generator of \subspace.
 
 \item By how $\bgam,\qbgam$ are set in step \ref{step:setQB},  the above implies that e.w.p. $(\tabsize+ \witsize)/|\F|$ over $\gamma$ 
 \[B(X)\cdot (f(X)+\beta)=1+ Q_B(X)Z_\subspace(X),\]
